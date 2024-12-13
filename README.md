@@ -57,6 +57,14 @@ Notice how we are representing luminosity within an area in a similar way we rep
 ## **Example of effect**
 
 <p align="center">
+  <img src="images/tests/gradient_sphere_alpha.png" width="150" alt="Sphere 0">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%2C15%2C0.0%5D.png" width="150" alt="Sphere 1">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%2C15%2C45.0%5D.png" width="150" alt="Sphere 2">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%2C15%2C90.0%5D.png" width="150" alt="Sphere 3">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%2C15%2C135.0%5D.png" width="150" alt="Sphere 4">
+</p>
+
+<p align="center">
   <img src="images/tests/Blade-Runner-2049-1753_Halftone%5BLines%2C10%2C45.0%5D.png" width="350" alt="Example 5">
   <img src="images/tests/Blade-Runner-2049-1753_Halftone%5BLines%2C10%2C135.0%5D.png" width="350" alt="Example 6">
 </p>
