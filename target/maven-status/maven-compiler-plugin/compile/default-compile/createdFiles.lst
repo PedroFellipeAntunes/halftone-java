@@ -1,0 +1,15 @@
+Operation/TYPE.class
+Operation/Blur.class
+FileManager/PngReader.class
+FileManager/Grayscale.class
+Util/Main.class
+Operation/RotateImage.class
+Windows/DropDownWindow.class
+Operation/Blend.class
+Windows/ImageViewer$ImagePanel.class
+Operation/Operations.class
+Windows/DropDownWindow$1.class
+Operation/HalftoneLines.class
+Windows/ImageViewer.class
+FileManager/PngSaver.class
+FileManager/PngConverter.class

@@ -1,0 +1,13 @@
+/home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/Grayscale.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngConverter.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngReader.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngSaver.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Blend.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Blur.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/HalftoneLines.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Operations.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/RotateImage.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/TYPE.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Main.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/DropDownWindow.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/ImageViewer.java
