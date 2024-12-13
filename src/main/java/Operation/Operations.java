@@ -26,7 +26,8 @@ public class Operations {
         } else {
             // Rotate image by angle
             RotateImage ri = new RotateImage();
-            BufferedImage rotatedImage = ri.rotateImage(image, angle);
+            BufferedImage rotatedImage = ri.rotateImage(image, angle, kernelSize);
+            //ImageViewer test_1 = new ImageViewer(rotatedImage, filePath);
             
             // Generate kernels
             HalftoneLines hl = new HalftoneLines();
@@ -37,14 +38,17 @@ public class Operations {
                     rotatedImage.getHeight(),
                     Offsets,
                     kernelSize);
+            //ImageViewer test_2 = new ImageViewer(lineImage, filePath);
             
             // Blur lines to new image
             Blur br = new Blur();
             BufferedImage blurredImage = br.applyVerticalBoxBlur(lineImage, kernelSize / 2);
+            //ImageViewer test_3 = new ImageViewer(blurredImage, filePath);
             
             // Blend both images to a new image
             Blend bd = new Blend();
             rotatedImage = bd.blendImagesWithMultiply(lineImage, blurredImage);
+            //ImageViewer test_4 = new ImageViewer(rotatedImage, filePath);
             
             // Rotate back to original angle and restore size
             rotatedImage = ri.rotateImageSameSize(rotatedImage, -angle);

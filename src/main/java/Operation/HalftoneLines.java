@@ -83,10 +83,18 @@ public class HalftoneLines {
             if (currentX >= 0 && currentX < image.getWidth()) {
                 for (int y = yStart; y < yStart + kernelSize && y < image.getHeight(); y++) {
                     int rgb = image.getRGB(currentX, y);
-                    Color color = new Color(rgb);
+                    Color color = new Color(rgb, true);
                     
-                    double luminance = 0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue();
-                    luminanceSum += luminance;
+                    double opacity = color.getAlpha() / 255.0; // Normalized
+                    
+                    double baseLuminance = 0.299 * color.getRed()
+                                         + 0.587 * color.getGreen()
+                                         + 0.114 * color.getBlue();
+                    
+                    // Apply inverted alpha (more transparency == higher luminace)
+                    double adjustedLuminance = baseLuminance + (1 - opacity) * 255;
+                    
+                    luminanceSum += adjustedLuminance;
                 }
                 
                 columnCount++;
