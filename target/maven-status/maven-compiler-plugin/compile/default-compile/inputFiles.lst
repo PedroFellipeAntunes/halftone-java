@@ -4,6 +4,7 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngSaver.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Blend.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Blur.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/HalftoneDots.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/HalftoneLines.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/Operations.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Operation/RotateImage.java

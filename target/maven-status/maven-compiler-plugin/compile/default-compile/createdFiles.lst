@@ -3,6 +3,7 @@ Operation/Blur.class
 FileManager/PngReader.class
 FileManager/Grayscale.class
 Util/Main.class
+Operation/HalftoneDots.class
 Operation/RotateImage.class
 Windows/DropDownWindow.class
 Operation/Blend.class

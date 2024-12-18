@@ -9,8 +9,12 @@ public class RotateImage {
     Rotate the image to a new image which is bigger than the original to avoid cut off
     */
     public BufferedImage rotateImage(BufferedImage image, double angle, int extendAreaSize) {
+        BufferedImage extendedImage = image;
+        
         // Scale image up
-        BufferedImage extendedImage = extendImageWithBorder(image, extendAreaSize);
+        if (extendAreaSize != 0) {
+            extendedImage = extendImageWithBorder(image, extendAreaSize);
+        }
         
         int w = extendedImage.getWidth();
         int h = extendedImage.getHeight();
@@ -22,6 +26,11 @@ public class RotateImage {
         
         int newWidth = (int) Math.floor(w * cos + h * sin);
         int newHeight = (int) Math.floor(h * cos + w * sin);
+        
+        // If the original size of the image is greater, keep that value
+        // Used to fix the proper rotation later
+        newWidth = Math.max(image.getWidth(), newWidth);
+        newHeight = Math.max(image.getHeight(), newHeight);
         
         BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         
@@ -36,7 +45,7 @@ public class RotateImage {
         
         g2d.drawImage(extendedImage, x, y, null);
         g2d.dispose();
-
+        
         return rotated;
     }
     

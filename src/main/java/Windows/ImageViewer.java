@@ -13,6 +13,9 @@ public class ImageViewer extends JDialog {
     
     private boolean goBack = false;
     
+    private final int MIN_WIDTH = 500;
+    private final int MIN_HEIGHT = 500;
+    
     public boolean wentBack() {
         return goBack;
     }
@@ -49,7 +52,8 @@ public class ImageViewer extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
         add(panel, BorderLayout.CENTER);
         
-        pack();
+        adjustWindowSize(image);
+        
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -64,22 +68,25 @@ public class ImageViewer extends JDialog {
         button.setPreferredSize(new Dimension(100, 40));
     }
     
+    private void adjustWindowSize(BufferedImage image) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int maxWidth = (int) (screenSize.width * 0.85);
+        int maxHeight = (int) (screenSize.height * 0.85);
+        
+        int imageWidth = image.getWidth();
+        int imageHeight = image.getHeight();
+        
+        int finalWidth = Math.max(MIN_WIDTH, Math.min(imageWidth, maxWidth));
+        int finalHeight = Math.max(MIN_HEIGHT, Math.min(imageHeight, maxHeight));
+        
+        setSize(finalWidth, finalHeight);
+    }
+    
     class ImagePanel extends JPanel {
         private BufferedImage image;
         
         public ImagePanel(BufferedImage image) {
             this.image = image;
-            
-            int width = image.getWidth();
-            int height = image.getHeight();
-            
-            if (width > height) {
-                setPreferredSize(new Dimension(700, 500));
-            } else if (width == height) {
-                setPreferredSize(new Dimension(500, 500));
-            } else {
-                setPreferredSize(new Dimension(500, 600));
-            }
         }
         
         public void updateImage(BufferedImage newImage) {
@@ -92,10 +99,12 @@ public class ImageViewer extends JDialog {
             super.paintComponent(g);
             double scaleX = (double) getWidth() / image.getWidth();
             double scaleY = (double) getHeight() / image.getHeight();
+            
             double scale = Math.min(scaleX, scaleY);
             
             int newWidth = (int) (image.getWidth() * scale);
             int newHeight = (int) (image.getHeight() * scale);
+            
             int x = (getWidth() - newWidth) / 2;
             int y = (getHeight() - newHeight) / 2;
             

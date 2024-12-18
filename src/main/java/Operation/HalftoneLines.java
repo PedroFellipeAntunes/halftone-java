@@ -102,16 +102,11 @@ public class HalftoneLines {
         }
         
         double averageLuminance = luminanceSum / (columnCount * kernelSize);
-        int adjustment;
         
         // Higher luminance generates smaller offset value, lower leads to greater offset
-        adjustment = (int) (kernelSize * (1 - averageLuminance / 255));
+        int yOffset = (int) (kernelSize / 2 * (1 - averageLuminance / 255));
         
-        // Set the offset value
-        int y1 = kernelSize / 2 - adjustment / 2;
-        int y2 = kernelSize / 2 + adjustment / 2;
-        
-        return new int[]{y1, y2};
+        return new int[]{-yOffset, yOffset};
     }
     
     /*
