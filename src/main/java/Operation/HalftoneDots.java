@@ -4,10 +4,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class HalftoneDots {
-    private final Color backgroundColor = Color.WHITE;
     private final Color foregroundColor = Color.BLACK;
     
-    // Gera uma grade de kernels e calcula o raio do ponto para cada kernel
+    /*
+    Generate a 2D grid of kernels
+    */
     public int[][] generateKernelRadii(BufferedImage image, int kernelSize) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -32,7 +33,9 @@ public class HalftoneDots {
         return radii;
     }
     
-    // Calcula o raio do ponto com base na luminosidade média do kernel
+    /*
+    Calculate the radius in each kernel based on luminosity
+    */
     private int calculateKernelLuminanceRadius(BufferedImage image, int xStart, int yStart, int width, int height, int kernelSize) {
         double luminanceSum = 0.0;
         int pixelCount = 0;
@@ -56,25 +59,19 @@ public class HalftoneDots {
         
         double averageLuminance = luminanceSum / pixelCount;
         
-        // Calcula o raio máximo com base na luminosidade (quanto mais escuro, maior o raio)
         int maxRadius = (int) Math.ceil((kernelSize * Math.sqrt(2)) / 2);
         int radius = (int) (maxRadius * (1 - averageLuminance / 255));
         
         return radius;
     }
     
-    // Desenha os pontos na imagem com base nos raios calculados
+    /*
+    Draw dots to image based on radius
+    */
     public BufferedImage drawHalftoneDots(int width, int height, int kernelSize, int[][] radii) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = result.createGraphics();
         
-//        // Draw background
-//        g2d.setColor(backgroundColor);
-//        
-//        // Fill the background with a white rectangle
-//        g2d.fillRect(0, 0, width, height);
-        
-        // Draw dots
         g2d.setColor(foregroundColor);
         
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
