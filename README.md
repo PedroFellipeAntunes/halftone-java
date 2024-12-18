@@ -1,6 +1,6 @@
 # Halftone
 
-This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to a image.
+This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to a image, with dots or lines as the pattern.
 
 <p align="center">
   <img src="images/tests/cameraman_Halftone%5BLines%2C10%2C45.0%5D.png" width="250" alt="Example 1">
@@ -9,6 +9,9 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 <p align="center">
   <img src="images/tests/pirate_Halftone%5BLines%2C10%2C135.0%5D.png" width="250" alt="Example 3">
   <img src="images/tests/baboon_Halftone%5BLines%2C10%2C45.0%5D.png" width="250" alt="Example 4">
+</p>
+<p align="center">
+  <img src="images/tests/baboon_color_dots.png" width="500" alt="Example Colored Dots">
 </p>
 
 ## **Features**
@@ -19,6 +22,8 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 - **Set Angle**: Use a slider to adjust the angle of the halftone pattern, with values from 0 to 360 degrees, to customize the visual effect.
 
 ## **How it works**
+
+This tutorial is specific to the line halftone pattern:
 
 <p align="center">
   <img src="images/steps/Step1.png" width="450" alt="Step 1">
@@ -83,6 +88,5 @@ This effect can be made even better by giving our image a outline, in this case 
 
 ## **TODO**
 
-- **Dot Halftone**: While there is a button to choose the dot pattern for the halftone, it's currently non-functional, I will be working on it later.
 - **Extra Control**: In the code there is already functionality to change things such as the spacing within the pattern, control the vertical blur size, control segment sample size, I simply have yet to implement the user controls in the UI.
 - **Transparent**: I'm thinking about adding a option to have a transparent background in the output, maybe.
