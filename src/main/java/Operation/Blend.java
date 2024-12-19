@@ -5,12 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Blend {
-    private final Color backgroundColor = Color.WHITE;
-    
     /*
     Mix the image of generated lines with the blurred version
     */
-    public BufferedImage blendImagesWithMultiply(BufferedImage image, BufferedImage blurredImage) {
+    public BufferedImage blendImagesWithMultiply(Color backgroundColor, BufferedImage image, BufferedImage blurredImage) {
         int width = Math.min(image.getWidth(), blurredImage.getWidth());
         int height = Math.min(image.getHeight(), blurredImage.getHeight());
         

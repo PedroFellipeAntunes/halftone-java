@@ -13,13 +13,22 @@ import java.util.List;
 public class DropDownWindow {
     private JFrame frame;
     private JLabel dropLabel;
-    private JSlider slider;
-    private JTextField valueField;
     private JSlider sliderSize;
     private JTextField valueFieldSize;
-    private JButton dotsButton;
-    private JButton linesButton;
+    private JSlider sliderAngle;
+    private JTextField valueFieldAngle;
     
+    private JButton colorPicker1 = new JButton();
+    private JButton colorPicker2 = new JButton();
+    private JButton reflectButton = new JButton("⟳");
+    
+    private JButton dotsButton = new JButton("Dot");
+    private JButton linesButton  = new JButton("Line");
+    private JButton sineButton = new JButton("Sine");
+    
+    private JButton[] buttonsType = {dotsButton, linesButton, sineButton};
+    
+    private Color[] colors = {Color.WHITE, Color.BLACK};
     private int scale = 15;
     private int angle = 45;
     private TYPE type = TYPE.Dots;
@@ -77,7 +86,7 @@ public class DropDownWindow {
                         int filesProcessed = 1;
                         
                         for (File file : files) {
-                            Operations.processFile(file.getPath(), scale, angle, type);
+                            Operations.processFile(file.getPath(), scale, angle, type, colors);
                             
                             filesProcessed++;
                             
@@ -110,66 +119,9 @@ public class DropDownWindow {
         });
         
         //Slider
-        slider = new JSlider(JSlider.HORIZONTAL, 0, 100, scale);
-        slider.setMajorTickSpacing(25);
-        slider.setMinorTickSpacing(10);
-        slider.setPaintTicks(true);
-        slider.setPaintLabels(true);
-        slider.setBackground(Color.BLACK);
-        slider.setForeground(Color.WHITE);
-        
-        //Value of slider
-        valueField = new JTextField();
-        valueField.setForeground(Color.WHITE);
-        valueField.setBackground(Color.BLACK);
-        valueField.setFont(defaultFont);
-        valueField.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        valueField.setText(String.valueOf(slider.getValue()));
-        valueField.setPreferredSize(new Dimension(50, 20));
-        
-        valueField.addActionListener(e -> {
-            if (!loading) {
-                String text = valueField.getText();
-                
-                if (!text.isEmpty()) {
-                    text = text.substring(0, Math.min(text.length(), 3));
-                    
-                    int value = Integer.parseInt(text);
-                    
-                    value = Math.max(0, Math.min(100, value));
-                    
-                    slider.setValue(value);
-                    valueField.setText(String.valueOf(value));
-                } else {
-                    valueField.setText(String.valueOf(slider.getValue()));
-                }
-                
-                valueField.transferFocus();
-            }
-        });
-        
-        slider.addChangeListener(e -> {
-            if (!loading) {
-                scale = slider.getValue();
-                
-                valueField.setText(String.valueOf(scale));
-            }
-        });
-        
-        //Panel with slider and value
-        JPanel sliderPanel = new JPanel(new BorderLayout());
-        JLabel scaleLabel = new JLabel("Scale (0px - 100px)", SwingConstants.LEFT);
-        scaleLabel.setBackground(Color.BLACK);
-        scaleLabel.setForeground(Color.WHITE);
-        scaleLabel.setOpaque(true);
-        sliderPanel.add(scaleLabel, BorderLayout.NORTH);
-        sliderPanel.add(slider, BorderLayout.WEST);
-        sliderPanel.add(valueField, BorderLayout.EAST);
-        
-        //SliderSize
-        sliderSize = new JSlider(JSlider.HORIZONTAL, 0, 360, angle);
-        sliderSize.setMajorTickSpacing(90);
-        sliderSize.setMinorTickSpacing(45);
+        sliderSize = new JSlider(JSlider.HORIZONTAL, 0, 100, scale);
+        sliderSize.setMajorTickSpacing(25);
+        sliderSize.setMinorTickSpacing(10);
         sliderSize.setPaintTicks(true);
         sliderSize.setPaintLabels(true);
         sliderSize.setBackground(Color.BLACK);
@@ -193,7 +145,7 @@ public class DropDownWindow {
                     
                     int value = Integer.parseInt(text);
                     
-                    value = Math.max(0, Math.min(360, value));
+                    value = Math.max(0, Math.min(100, value));
                     
                     sliderSize.setValue(value);
                     valueFieldSize.setText(String.valueOf(value));
@@ -207,31 +159,127 @@ public class DropDownWindow {
         
         sliderSize.addChangeListener(e -> {
             if (!loading) {
-                angle = sliderSize.getValue();
+                scale = sliderSize.getValue();
                 
-                valueFieldSize.setText(String.valueOf(angle));
+                valueFieldSize.setText(String.valueOf(scale));
             }
         });
         
-        //Panel with slider and value
-        JPanel sliderPanel3 = new JPanel(new BorderLayout());
+        //Panel with sliderScale and value
+        JPanel sliderPanelSize = new JPanel(new BorderLayout());
+        JLabel scaleLabel = new JLabel("Scale (0px - 100px)", SwingConstants.LEFT);
+        scaleLabel.setBackground(Color.BLACK);
+        scaleLabel.setForeground(Color.WHITE);
+        scaleLabel.setOpaque(true);
+        sliderPanelSize.add(scaleLabel, BorderLayout.NORTH);
+        sliderPanelSize.add(sliderSize, BorderLayout.WEST);
+        sliderPanelSize.add(valueFieldSize, BorderLayout.EAST);
+        
+        //SliderSize
+        sliderAngle = new JSlider(JSlider.HORIZONTAL, 0, 360, angle);
+        sliderAngle.setMajorTickSpacing(90);
+        sliderAngle.setMinorTickSpacing(45);
+        sliderAngle.setPaintTicks(true);
+        sliderAngle.setPaintLabels(true);
+        sliderAngle.setBackground(Color.BLACK);
+        sliderAngle.setForeground(Color.WHITE);
+        
+        //Value of sliderAngle
+        valueFieldAngle = new JTextField();
+        valueFieldAngle.setForeground(Color.WHITE);
+        valueFieldAngle.setBackground(Color.BLACK);
+        valueFieldAngle.setFont(defaultFont);
+        valueFieldAngle.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        valueFieldAngle.setText(String.valueOf(sliderAngle.getValue()));
+        valueFieldAngle.setPreferredSize(new Dimension(50, 20));
+        
+        valueFieldAngle.addActionListener(e -> {
+            if (!loading) {
+                String text = valueFieldAngle.getText();
+                
+                if (!text.isEmpty()) {
+                    text = text.substring(0, Math.min(text.length(), 3));
+                    
+                    int value = Integer.parseInt(text);
+                    
+                    value = Math.max(0, Math.min(360, value));
+                    
+                    sliderAngle.setValue(value);
+                    valueFieldAngle.setText(String.valueOf(value));
+                } else {
+                    valueFieldAngle.setText(String.valueOf(sliderAngle.getValue()));
+                }
+                
+                valueFieldAngle.transferFocus();
+            }
+        });
+        
+        sliderAngle.addChangeListener(e -> {
+            if (!loading) {
+                angle = sliderAngle.getValue();
+                
+                valueFieldAngle.setText(String.valueOf(angle));
+            }
+        });
+        
+        //Panel with sliderSize and value
+        JPanel sliderPanelAngle = new JPanel(new BorderLayout());
         JLabel angleLabel = new JLabel("Angle (0° - 360°)", SwingConstants.LEFT);
         angleLabel.setBackground(Color.BLACK);
         angleLabel.setForeground(Color.WHITE);
         angleLabel.setOpaque(true);
-        sliderPanel3.add(angleLabel, BorderLayout.NORTH);
-        sliderPanel3.add(sliderSize, BorderLayout.WEST);
-        sliderPanel3.add(valueFieldSize, BorderLayout.EAST);
+        sliderPanelAngle.add(angleLabel, BorderLayout.NORTH);
+        sliderPanelAngle.add(sliderAngle, BorderLayout.WEST);
+        sliderPanelAngle.add(valueFieldAngle, BorderLayout.EAST);
+        
+        // Configure color pickers
+        setButtonsVisualsColors(colorPicker1, colors[0]);
+        setButtonsVisualsColors(colorPicker2, colors[1]);
+        
+        colorPicker1.addActionListener(e -> {
+            Color color = JColorChooser.showDialog(frame, "Choose Color Background", colors[0]);
+            
+            if (color != null) {
+                colorPicker1.setBackground(color);
+                colors[0] = color;
+            }
+        });
+        
+        colorPicker2.addActionListener(e -> {
+            Color color = JColorChooser.showDialog(frame, "Choose Color Foreground", colors[1]);
+            
+            if (color != null) {
+                colorPicker2.setBackground(color);
+                colors[1] = color;
+            }
+        });
+        
+        // Panel with colors
+        JPanel sliderWithColorPanel = new JPanel(new BorderLayout());
+        sliderWithColorPanel.add(colorPicker1, BorderLayout.NORTH);
+        sliderWithColorPanel.add(colorPicker2, BorderLayout.SOUTH);
+        
+        // Reflect button
+        setButtonVisuals(reflectButton);
+        
+        reflectButton.addActionListener(e -> {
+            // Reflect the angle horizontaly
+            int newAngle = ((angle % 360) + 360) % 360;
+            newAngle = (180 - newAngle + 360) % 360;
+            sliderAngle.setValue(newAngle);
+        });
         
         //Bottom panel
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         controlPanel.setBackground(Color.BLACK);
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        controlPanel.add(sliderPanel);
-        controlPanel.add(sliderPanel3);
+        controlPanel.add(sliderWithColorPanel);
+        controlPanel.add(sliderPanelSize);
+        controlPanel.add(sliderPanelAngle);
+        controlPanel.add(reflectButton);
         
-        dotsButton = new JButton("Dots");
+        // Dots
         setButtonsVisuals(dotsButton);
         dotsButton.setBackground(Color.WHITE);
         dotsButton.setForeground(Color.BLACK);
@@ -242,14 +290,14 @@ public class DropDownWindow {
                     dotsButton.setBackground(Color.WHITE);
                     dotsButton.setForeground(Color.BLACK);
                     
-                    resetButton(linesButton);
+                    resetButtons(dotsButton);
                     
                     type = TYPE.Dots;
                 }
             }
         });
         
-        linesButton = new JButton("Lines");
+        // Lines
         setButtonsVisuals(linesButton);
         
         linesButton.addActionListener(e -> {
@@ -258,9 +306,25 @@ public class DropDownWindow {
                     linesButton.setBackground(Color.WHITE);
                     linesButton.setForeground(Color.BLACK);
                     
-                    resetButton(dotsButton);
+                    resetButtons(linesButton);
                     
                     type = TYPE.Lines;
+                }
+            }
+        });
+        
+        // Sine
+        setButtonsVisuals(sineButton);
+        
+        sineButton.addActionListener(e -> {
+            if (!loading) {
+                if (!type.equals(TYPE.Sine)) {
+                    sineButton.setBackground(Color.WHITE);
+                    sineButton.setForeground(Color.BLACK);
+                    
+                    resetButtons(sineButton);
+                    
+                    type = TYPE.Sine;
                 }
             }
         });
@@ -272,6 +336,7 @@ public class DropDownWindow {
         
         verticalButtonsPanel.add(dotsButton);
         verticalButtonsPanel.add(linesButton);
+        verticalButtonsPanel.add(sineButton);
         
         frame.add(verticalButtonsPanel, BorderLayout.EAST);
         
@@ -295,9 +360,28 @@ public class DropDownWindow {
         button.setPreferredSize(new Dimension(100, 40));
     }
     
-    private void resetButton(JButton button) {
+    private void setButtonVisuals(JButton button) {
         button.setBackground(Color.BLACK);
         button.setForeground(Color.WHITE);
+        button.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(40, 40));
+    }
+    
+    private void setButtonsVisualsColors(JButton button, Color color) {
+        button.setBackground(color);
+        button.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(40, 40));
+    }
+    
+    private void resetButtons(JButton excludedButton) {
+        for (JButton button : buttonsType) {
+            if (button != excludedButton) {
+                button.setBackground(Color.BLACK);
+                button.setForeground(Color.WHITE);
+            }
+        }
     }
     
     private void ableOrDisableButton(JButton button) {

@@ -2,5 +2,6 @@ package Operation;
 
 public enum TYPE {
     Dots,
-    Lines;
+    Lines,
+    Sine;
 }

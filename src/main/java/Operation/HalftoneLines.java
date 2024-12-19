@@ -10,7 +10,6 @@ import java.util.Random;
 public class HalftoneLines {
     private int[] lineSpacing;
     private int horizontalBlurSize = 0;
-    private final Color foregroundColor = Color.BLACK;
     
     public void setHorizontalBlur (int horizontalBlurSize) {
         // Cannot be negative
@@ -115,7 +114,7 @@ public class HalftoneLines {
     vertices_count = image_width * 2
     polygon_count = kernel_count
     */
-    public BufferedImage drawPolygonsInKernels(int imageWidth, int imageHeight, int[][][] offsets, int kernelSize) {
+    public BufferedImage drawPolygonsInKernels(Color foregroundColor, int imageWidth, int imageHeight, int[][][] offsets, int kernelSize) {
         BufferedImage drawnImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = drawnImage.createGraphics();
         
@@ -140,6 +139,47 @@ public class HalftoneLines {
             // Right to left
             for (int x = offsets[kernelIndex].length - 1; x >= 0; x--) {
                 int y = yStart + offsets[kernelIndex][x][1];
+                
+                polygon.addPoint(x, y);
+            }
+            
+            g2d.fill(polygon);
+        }
+        
+        g2d.dispose();
+        
+        return drawnImage;
+    }
+    
+    public BufferedImage drawPolygonsInKernelsSine(Color foregroundColor, int imageWidth, int imageHeight, int[][][] offsets, int kernelSize, double frequencyFactor, int amplitude) {
+        BufferedImage drawnImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = drawnImage.createGraphics();
+        
+        g2d.setColor(foregroundColor);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Define sine wave values
+        double frequency = frequencyFactor * 2 * Math.PI / imageWidth;
+        
+        for (int kernelIndex = 0; kernelIndex < offsets.length; kernelIndex++) {
+            Polygon polygon = new Polygon();
+            
+            // Start position for current y
+            int yStart = kernelIndex * kernelSize;
+            
+            // Add point to polygon going clockwise throught the array
+            // Left to right
+            for (int x = 0; x < offsets[kernelIndex].length; x++) {
+                int sineY = yStart + (int) (amplitude * Math.sin(frequency * x));
+                int y = sineY + offsets[kernelIndex][x][0];
+                
+                polygon.addPoint(x, y);
+            }
+            
+            // Right to left
+            for (int x = offsets[kernelIndex].length - 1; x >= 0; x--) {
+                int sineY = yStart + (int) (amplitude * Math.sin(frequency * x));
+                int y = sineY + offsets[kernelIndex][x][1];
                 
                 polygon.addPoint(x, y);
             }

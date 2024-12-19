@@ -73,11 +73,16 @@ public class ImageViewer extends JDialog {
         int maxWidth = (int) (screenSize.width * 0.85);
         int maxHeight = (int) (screenSize.height * 0.85);
         
-        int imageWidth = image.getWidth();
-        int imageHeight = image.getHeight();
+        double scaleX = (double) maxWidth / image.getWidth();
+        double scaleY = (double) maxHeight / image.getHeight();
         
-        int finalWidth = Math.max(MIN_WIDTH, Math.min(imageWidth, maxWidth));
-        int finalHeight = Math.max(MIN_HEIGHT, Math.min(imageHeight, maxHeight));
+        double scale = Math.min(scaleX, scaleY);
+        
+        int scaledWidth = (int) (image.getWidth() * scale);
+        int scaledHeight = (int) (image.getHeight() * scale);
+        
+        int finalWidth = Math.max(MIN_WIDTH, scaledWidth);
+        int finalHeight = Math.max(MIN_HEIGHT, scaledHeight);
         
         setSize(finalWidth, finalHeight);
     }

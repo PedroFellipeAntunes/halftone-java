@@ -5,6 +5,7 @@ FileManager/Grayscale.class
 Util/Main.class
 Operation/HalftoneDots.class
 Operation/RotateImage.class
+Operation/Operations$1.class
 Windows/DropDownWindow.class
 Operation/Blend.class
 Windows/ImageViewer$ImagePanel.class

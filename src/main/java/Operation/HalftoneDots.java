@@ -4,8 +4,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class HalftoneDots {
-    private final Color foregroundColor = Color.BLACK;
-    
     /*
     Generate a 2D grid of kernels
     */
@@ -68,7 +66,7 @@ public class HalftoneDots {
     /*
     Draw dots to image based on radius
     */
-    public BufferedImage drawHalftoneDots(int width, int height, int kernelSize, int[][] radii) {
+    public BufferedImage drawHalftoneDots(Color foregroundColor, int width, int height, int kernelSize, int[][] radii) {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = result.createGraphics();
         
