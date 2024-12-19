@@ -1,6 +1,6 @@
 # Halftone
 
-This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to a image, with dots or lines as the pattern.
+This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to a image, with dots, lines or sine wave as the pattern.
 
 <p align="center">
   <img src="images/tests/cameraman_Halftone%5BLines%2C10%2C45.0%5D.png" width="250" alt="Example 1">
@@ -21,9 +21,25 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 - **Adjust Halftone Scale**: Use a slider to adjust the scale of the halftone effect, ranging from 0 to 100.
 - **Set Angle**: Use a slider to adjust the angle of the halftone pattern, with values from 0 to 360 degrees, to customize the visual effect.
 
+## **How to use**
+
+**1.** Execute the `.jar` file located in the `/target` folder: `Halftone.jar`.
+
+<p align="center">
+  <img src="images/steps/interface.png" width="450" alt="Interface">
+</p>
+
+**2.** Change the settings to desired values.
+
+**3.** Drag and drop the image(s) into the interface.
+
+**4.** Preview the changed image before saving.
+
+**5.** After it's done, the image(s) will be saved to the same folder as the original with the name: `originalname_Halftone[type,size,angle].png`
+
 ## **How it works**
 
-This tutorial is specific to the line halftone pattern:
+This tutorial is specific to the line/sine halftone pattern:
 
 <p align="center">
   <img src="images/steps/Step1.png" width="450" alt="Step 1">
@@ -70,6 +86,10 @@ Notice how we are representing luminosity within an area in a similar way we rep
 </p>
 
 <p align="center">
+  <img src="images/tests/Lion_waiting_in_Namibia_Halftone_Sine.png" width="550" alt="Example Lion Sine">
+</p>
+
+<p align="center">
   <img src="images/tests/Blade-Runner-2049-1753_Halftone%5BLines%2C10%2C45.0%5D.png" width="350" alt="Example 5">
   <img src="images/tests/Blade-Runner-2049-1753_Halftone%5BLines%2C10%2C135.0%5D.png" width="350" alt="Example 6">
 </p>
@@ -89,4 +109,3 @@ This effect can be made even better by giving our image a outline, in this case 
 ## **TODO**
 
 - **Extra Control**: In the code there is already functionality to change things such as the spacing within the pattern, control the vertical blur size, control segment sample size, I simply have yet to implement the user controls in the UI.
-- **Transparent**: I'm thinking about adding a option to have a transparent background in the output, maybe.
