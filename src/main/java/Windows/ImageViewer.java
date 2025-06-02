@@ -1,6 +1,6 @@
 package Windows;
 
-import Operation.Operations;
+import Halftone.Operations;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,6 +11,8 @@ public class ImageViewer extends JDialog {
     private JButton saveButton;
     private JButton goBackButton;
     
+    private final Operations operations;
+    
     private boolean goBack = false;
     
     private final int MIN_WIDTH = 500;
@@ -20,8 +22,9 @@ public class ImageViewer extends JDialog {
         return goBack;
     }
     
-    public ImageViewer(BufferedImage image, String filePath) {
+    public ImageViewer(BufferedImage image, String filePath, Operations operations) {
         super((Frame) null, "Image Viewer", true);
+        this.operations = operations;
         
         panel = new ImagePanel(image);
         panel.setBackground(new Color(61, 56, 70));
@@ -36,7 +39,7 @@ public class ImageViewer extends JDialog {
         setButtonsVisuals(goBackButton);
         
         saveButton.addActionListener(e -> {
-            Operations.saveImage(image, filePath);
+            operations.saveImage(image, filePath);
             goBack = true;
             dispose();
         });
