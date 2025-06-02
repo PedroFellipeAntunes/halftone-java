@@ -98,7 +98,7 @@ Below is a high-level overview of the halftone algorithm (example based on line/
    - For each kernel, sum up the RGB values and compute the average.
 
    <p align="center">
-     <img src="images/steps/Step1.png" width="450" alt="Step 1: Kernel Generation">
+     <img src="images/steps/Step1.png" width="650" alt="Step 1: Kernel Generation">
    </p>
 
 2. **Luminance Calculation**  
@@ -106,7 +106,7 @@ Below is a high-level overview of the halftone algorithm (example based on line/
    - Determine a center point and compute two offset points based on luminance, constrained to half the kernel size.
 
    <p align="center">
-     <img src="images/steps/Step2.png" width="450" alt="Step 2: Luminance and Offsets">
+     <img src="images/steps/Step2.png" width="650" alt="Step 2: Luminance and Offsets">
    </p>
 
 3. **Polygon Filling**  
@@ -114,7 +114,7 @@ Below is a high-level overview of the halftone algorithm (example based on line/
    - Connect these points along each row to create a complex shape that follows the image’s contours at the given angle.
 
    <p align="center">
-     <img src="images/steps/Step3.png" width="450" alt="Step 3: Polygon Filling">
+     <img src="images/steps/Step3.png" width="650" alt="Step 3: Polygon Filling">
    </p>
 
 4. **CMYK Processing (Optional)**  
