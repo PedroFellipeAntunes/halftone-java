@@ -138,8 +138,8 @@ Below is a high-level overview of the halftone algorithm (example based on line/
 </p>
 
 <p align="center">
-  <img src="images/tests/Blade-Runner-2049-1753_bottom.png" width="450" alt="Example 5">
-  <img src="images/tests/Blade-Runner-2049-1753_top.png" width="450" alt="Example 6">
+  <img src="images/tests/Blade-Runner-2049-1753_bottom.png" width="650" alt="Example 5">
+  <img src="images/tests/Blade-Runner-2049-1753_top.png" width="650" alt="Example 6">
 </p>
 
 Overlaying halftones at opposing angles with the dark layer at 50% opacity to create a cross-hatching effect.
