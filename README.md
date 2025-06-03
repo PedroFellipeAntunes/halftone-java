@@ -1,6 +1,6 @@
 # Halftone
 
-This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, with dots, lines or sine waves as the pattern.
+This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, with dots, lines or sine waves as the pattern. This code uses a codebase from my other project to [separate the CMYK colors](https://github.com/PedroFellipeAntunes/color-separator-java).
 
 <p align="center">
   <table align="center">
