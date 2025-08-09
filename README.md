@@ -101,6 +101,8 @@ Below is a high-level overview of the halftone algorithm (example based on line/
      <img src="images/steps/Step1.png" width="650" alt="Step 1: Kernel Generation">
    </p>
 
+   Try out my simulation in real time of the kernel calculation by running the `kernel_simulator.html`!
+
 2. **Luminance Calculation**  
    - Within each kernel, convert the average color to luminance.  
    - Determine a center point and compute two offset points based on luminance, constrained to half the kernel size.
