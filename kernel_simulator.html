@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Simulator: Rotated Grid</title>
+
+<style>
+  :root{
+    --bg: #000;
+    --fg: #fff;
+    --muted: #bfbfbf;
+    --accent: #0b7bdc;
+    --danger-fill: rgba(255,0,0,0.5);
+    --danger-stroke: rgba(255,0,0,1);
+    --border: #fff;
+    --green: #00ff00;
+    --control-gap: 1vw;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1vw;
+  }
+
+  .page {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1vh 1vw;
+  }
+
+  .panel {
+    width: 90vw;
+    max-width: 100%;
+    height: 95vh;
+    max-height: 100%;
+    border: 1px solid var(--border);
+    background: transparent;
+    padding: 1vh 1vw;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-size: 1.6vw;
+    color: var(--fg);
+    margin-bottom: 0.5vh;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  #controls {
+    display: flex;
+    gap: var(--control-gap);
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    font-size: 1vw;
+  }
+
+  .control-left, .control-right {
+    display: flex;
+    gap: 1vw;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  label {
+    display: flex;
+    gap: 0.5vw;
+    align-items: center;
+    color: var(--fg);
+    font-size: 1vw;
+    white-space: nowrap;
+  }
+
+  label > span {
+    display: inline-block;
+    width: 3ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .small {
+    font-size: 0.9vw;
+    color: var(--muted);
+  }
+
+  input[type="range"] {
+    width: 12vw;
+    height: 2vh;
+    accent-color: var(--fg);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="number"] {
+    background: transparent;
+    color: var(--fg);
+    border: 1.5px solid var(--border);
+    padding: 0.6vh 1vw;
+    width: 7vw;
+    font-family: inherit;
+    font-size: 1vw;
+    border-radius: 3px;
+    text-align: right;
+  }
+
+  input[type="checkbox"] {
+    width: 1.4vw;
+    height: 1.4vw;
+    accent-color: var(--fg);
+    cursor: pointer;
+    margin-right: 0.4vw;
+  }
+
+  .canvas-wrap {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+    padding: 1vh 0;
+    overflow: hidden;
+  }
+
+  canvas {
+    /* remove aspect-ratio to avoid conflict */
+    width: 100%;
+    max-height: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    image-rendering: pixelated;
+    display: block;
+  }
+
+  .info {
+    padding-top: 0.5vh;
+    color: var(--muted);
+    font-size: 0.9vw;
+  }
+
+  @media (max-width: 600px) {
+    html, body {
+      font-size: 3vw;
+    }
+    .panel {
+      width: 98vw;
+      height: 98vh;
+      padding: 1vh 2vw;
+    }
+    #controls {
+      font-size: 3vw;
+      gap: 2vw;
+    }
+    input[type="range"] {
+      width: 45vw;
+      height: 3.5vh;
+    }
+    input[type="number"] {
+      width: 20vw;
+      font-size: 3vw;
+      padding: 1vh 1.2vw;
+    }
+    input[type="checkbox"] {
+      width: 3.5vw;
+      height: 3.5vw;
+    }
+    .small {
+      font-size: 2vw;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="panel">
+      <h1>Simulator: Rotated Grid</h1>
+
+      <div id="controls">
+        <div class="control-left">
+          <label>Angle: <span id="angleVal">0</span>°
+            <input id="angle" type="range" min="0" max="360" value="0">
+          </label>
+
+          <label>Kernel size: <span id="kVal">20</span> px
+            <input id="kernel" type="range" min="4" max="80" value="20">
+          </label>
+
+          <label>Rect Width:
+            <input id="rectW" type="number" value="200" min="4" max="1200">
+          </label>
+
+          <label>Rect Height:
+            <input id="rectH" type="number" value="200" min="4" max="1200">
+          </label>
+
+          <label><input id="expanded" type="checkbox" checked> Expanded Border</label>
+          <label><input id="drawFullGrid" type="checkbox"> Draw Full Grid</label>
+        </div>
+
+        <div class="control-right">
+          <!-- space for future controls -->
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="c"></canvas>
+      </div>
+
+      <div class="info">
+        <div id="stats" class="small"></div>
+        <div class="small">Red grid = all cells. White grid = sampled cells. Dashed green box = bounding box. Blue rectangle = original image.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  (() => {
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    const angleInput = document.getElementById('angle');
+    const angleVal = document.getElementById('angleVal');
+    const kernelInput = document.getElementById('kernel');
+    const kVal = document.getElementById('kVal');
+    const expanded = document.getElementById('expanded');
+    const drawFullGridInput = document.getElementById('drawFullGrid');
+    const rectWInput = document.getElementById('rectW');
+    const rectHInput = document.getElementById('rectH');
+    const stats = document.getElementById('stats');
+
+    const ASPECT_RATIO = 820 / 520;
+
+    function degToRad(d){ return d * Math.PI / 180; }
+
+    function rotatePoint(x, y, cx, cy, theta) {
+      const dx = x - cx;
+      const dy = y - cy;
+      const cos = Math.cos(theta), sin = Math.sin(theta);
+      const rx = dx * cos - dy * sin;
+      const ry = dx * sin + dy * cos;
+      return { x: cx + rx, y: cy + ry };
+    }
+
+    function inverseRotatePoint(x, y, cx, cy, theta) {
+      return rotatePoint(x, y, cx, cy, -theta);
+    }
+
+    // Ajusta tamanho do canvas mantendo proporção e redimensiona resolução
+    function resizeCanvas() {
+      const wrap = document.querySelector('.canvas-wrap');
+      const maxWidth = wrap.clientWidth;
+      const maxHeight = wrap.clientHeight;
+
+      let newWidth = maxWidth;
+      let newHeight = newWidth / ASPECT_RATIO;
+
+      if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        newWidth = newHeight * ASPECT_RATIO;
+      }
+
+      canvas.width = Math.floor(newWidth);
+      canvas.height = Math.floor(newHeight);
+
+      canvas.style.width = `${newWidth}px`;
+      canvas.style.height = `${newHeight}px`;
+
+      draw();
+    }
+
+    function draw() {
+      const angleDeg = Number(angleInput.value);
+      const theta = degToRad(angleDeg);
+      angleVal.textContent = angleDeg;
+
+      const kernel = Number(kernelInput.value);
+      kVal.textContent = kernel;
+
+      const rectW = Math.max(1, Math.floor(Number(rectWInput.value) || 0));
+      const rectH = Math.max(1, Math.floor(Number(rectHInput.value) || 0));
+      const border = expanded.checked ? kernel : 0;
+      const drawFullGrid = drawFullGridInput.checked;
+
+      const imgW = rectW + 2 * border;
+      const imgH = rectH + 2 * border;
+
+      const canvasW = canvas.width;
+      const canvasH = canvas.height;
+
+      // Center the drawing inside the canvas
+      const originX = Math.max(0, Math.round((canvasW - imgW) / 2));
+      const originY = Math.max(0, Math.round((canvasH - imgH) / 2));
+
+      const centerX = imgW / 2;
+      const centerY = imgH / 2;
+
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      ctx.save();
+      ctx.translate(originX, originY);
+
+      // outline expanded rectangle (with border)
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, imgW, imgH);
+
+      // original blue rectangle inside border
+      ctx.fillStyle = '#0000ff80';
+      ctx.fillRect(border, border, rectW, rectH);
+
+      const corners = [
+        {x: 0, y: 0},
+        {x: imgW, y: 0},
+        {x: 0, y: imgH},
+        {x: imgW, y: imgH}
+      ];
+
+      const rotatedCorners = corners.map(p => rotatePoint(p.x, p.y, centerX, centerY, theta));
+      const xrVals = rotatedCorners.map(p => p.x);
+      const yrVals = rotatedCorners.map(p => p.y);
+      const minXr = Math.min(...xrVals);
+      const maxXr = Math.max(...xrVals);
+      const minYr = Math.min(...yrVals);
+      const maxYr = Math.max(...yrVals);
+
+      const Wb = maxXr - minXr;
+      const Hb = maxYr - minYr;
+
+      const numCols = Math.max(1, Math.ceil(Wb / kernel));
+      const numRows = Math.max(1, Math.ceil(Hb / kernel));
+
+      const occupancy = new Array(numRows);
+      const counts = new Array(numRows);
+      for (let r = 0; r < numRows; r++) {
+        occupancy[r] = new Array(numCols).fill(false);
+        counts[r] = new Array(numCols).fill(0);
+      }
+
+      let sampled = 0;
+      for (let yy = border; yy < border + rectH; yy++) {
+        for (let xx = border; xx < border + rectW; xx++) {
+          const rp = rotatePoint(xx, yy, centerX, centerY, theta);
+          const xr = rp.x, yr = rp.y;
+          const col = Math.floor((xr - minXr) / kernel);
+          const row = Math.floor((yr - minYr) / kernel);
+          if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
+            occupancy[row][col] = true;
+            counts[row][col] += 1;
+          }
+          sampled++;
+        }
+      }
+
+      ctx.lineWidth = 1;
+      for (let r = 0; r < numRows; r++) {
+        for (let c = 0; c < numCols; c++) {
+          const x0 = minXr + c * kernel;
+          const x1 = minXr + (c + 1) * kernel;
+          const y0 = minYr + r * kernel;
+          const y1 = minYr + (r + 1) * kernel;
+
+          const rc0 = inverseRotatePoint(x0, y0, centerX, centerY, theta);
+          const rc1 = inverseRotatePoint(x1, y0, centerX, centerY, theta);
+          const rc2 = inverseRotatePoint(x1, y1, centerX, centerY, theta);
+          const rc3 = inverseRotatePoint(x0, y1, centerX, centerY, theta);
+
+          if (drawFullGrid) {
+            ctx.beginPath();
+            ctx.moveTo(rc0.x, rc0.y);
+            ctx.lineTo(rc1.x, rc1.y);
+            ctx.lineTo(rc2.x, rc2.y);
+            ctx.lineTo(rc3.x, rc3.y);
+            ctx.closePath();
+            ctx.strokeStyle = 'rgba(255,0,0,1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          if (occupancy[r][c]) {
+            ctx.beginPath();
+            ctx.moveTo(rc0.x, rc0.y);
+            ctx.lineTo(rc1.x, rc1.y);
+            ctx.lineTo(rc2.x, rc2.y);
+            ctx.lineTo(rc3.x, rc3.y);
+            ctx.closePath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255,255,255,1)';
+            ctx.stroke();
+          }
+        }
+      }
+
+      const bb0 = inverseRotatePoint(minXr, minYr, centerX, centerY, theta);
+      const bb1 = inverseRotatePoint(maxXr, minYr, centerX, centerY, theta);
+      const bb2 = inverseRotatePoint(maxXr, maxYr, centerX, centerY, theta);
+      const bb3 = inverseRotatePoint(minXr, maxYr, centerX, centerY, theta);
+
+      ctx.beginPath();
+      ctx.moveTo(bb0.x, bb0.y);
+      ctx.lineTo(bb1.x, bb1.y);
+      ctx.lineTo(bb2.x, bb2.y);
+      ctx.lineTo(bb3.x, bb3.y);
+      ctx.closePath();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6,4]);
+      ctx.strokeStyle = '#00ff00';
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 3, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.restore();
+
+      const totalCells = numCols * numRows;
+      let occupiedCount = 0;
+      let totalSamples = 0;
+      for (let r=0;r<numRows;r++){
+        for (let c=0;c<numCols;c++){
+          if (occupancy[r][c]) occupiedCount++;
+          totalSamples += counts[r][c];
+        }
+      }
+
+      stats.innerHTML = `Expanded image: ${imgW}×${imgH} px (border=${border}) &nbsp; | &nbsp; Rotated bounding box: ${Wb.toFixed(2)}×${Hb.toFixed(2)} px<br>
+        Grid: ${numRows} rows × ${numCols} cols = ${totalCells} cells &nbsp; | &nbsp; Occupied cells: ${occupiedCount} &nbsp; | &nbsp; Sampled points: ${totalSamples}`;
+    }
+
+    angleInput.addEventListener('input', draw);
+    kernelInput.addEventListener('input', draw);
+    expanded.addEventListener('change', draw);
+    drawFullGridInput.addEventListener('change', draw);
+    rectWInput.addEventListener('input', draw);
+    rectHInput.addEventListener('input', draw);
+
+    window.addEventListener('resize', resizeCanvas);
+
+    resizeCanvas(); // inicializa com o tamanho correto
+  })();
+</script>
+</body>
+</html>
+
