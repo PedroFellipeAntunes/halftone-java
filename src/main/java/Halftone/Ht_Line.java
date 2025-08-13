@@ -42,6 +42,7 @@ public class Ht_Line {
         
         if (invRot == null) {
             g.dispose();
+            
             return output;
         }
 
@@ -231,8 +232,8 @@ public class Ht_Line {
      * Compute half-thickness (in pixels) for a stripe based on grayscale value [0..255].
      * Black (0) yields maximum thickness = (kernelSize/2 - lineSpacing), white (255) yields zero.
      */
-    private int computeBaseHalfThickness(double gray, int kernelSize) {
-        return (int) (((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0)));
+    private double computeBaseHalfThickness(double gray, int kernelSize) {
+        return ((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0));
     }
 
     private boolean rowHasData(ImageData data, int row) {
@@ -348,6 +349,7 @@ public class Ht_Line {
         }
 
         path.closePath();
+        
         return path;
     }
 
@@ -375,6 +377,7 @@ public class Ht_Line {
         }
 
         path.closePath();
+        
         return path;
     }
 
