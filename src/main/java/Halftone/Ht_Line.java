@@ -233,7 +233,9 @@ public class Ht_Line {
      * Black (0) yields maximum thickness = (kernelSize/2 - lineSpacing), white (255) yields zero.
      */
     private double computeBaseHalfThickness(double gray, int kernelSize) {
-        return ((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0));
+        double thick = ((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0));
+        
+        return (thick > 0.25) ? thick : 0; // Prevent lines smaller than a pixel
     }
 
     private boolean rowHasData(ImageData data, int row) {
