@@ -64,6 +64,8 @@ public class Ht_Dot {
 
                 // Radius based on grayscale and alpha
                 double radius = (gray / 255.0) * (alpha / 255.0) * maxRadius;
+                
+                if (isTooSmall(radius)) continue; // Prevents dot smaller than pixel
 
                 // Compute kernel center in rotated coordinates
                 Point2D centerRot = computeKernelCenterRotated(kernelRow, kernelCol, kernelSize, minXr, minYr);
@@ -130,6 +132,8 @@ public class Ht_Dot {
                 // Side half-length based on grayscale and alpha,
                 // capped so full side = kernelSize when gray=0 and alpha=255
                 double halfSide = (gray / 255.0) * (alpha / 255.0) * (kernelSize / 2.0);
+                
+                if (isTooSmall(halfSide)) continue; // Prevents smaller than pixel
 
                 // Compute center of the kernel in rotated coordinates
                 Point2D centerRot = computeKernelCenterRotated(kernelRow, kernelCol, kernelSize, minXr, minYr);
@@ -200,6 +204,8 @@ public class Ht_Dot {
                 // Side length based on grayscale and alpha
                 double overlapMargin = 0.5; // 50% required for triangle to properly cover the kernel area
                 double side = (gray / 255.0) * (alpha / 255.0) * (kernelSize * (1.0 + overlapMargin));
+                
+                if (isTooSmall(side)) continue; // Prevents smaller than pixel
 
                 // Compute circumscribed radius
                 double radius = side / Math.sqrt(3);
@@ -244,7 +250,11 @@ public class Ht_Dot {
         return outputImg;
     }
     
-    //---------------------- Helper Methods ----------------------    
+    //---------------------- Helper Methods ----------------------
+    
+    private boolean isTooSmall(double value) {
+        return value < 0.25;
+    }
 
     private void fillBackground(Graphics2D g2d, int width, int height) {
         g2d.setColor(backgroundColor);
@@ -278,18 +288,14 @@ public class Ht_Dot {
     }
 
     private void drawDot(Graphics2D g2d, Point2D center, double radius) {
-        double diameter = 2 * radius;
+        double diameter = 2.0 * radius;
         double drawX = center.getX() - radius;
         double drawY = center.getY() - radius;
 
+        java.awt.geom.Ellipse2D.Double ellipse = new java.awt.geom.Ellipse2D.Double(drawX, drawY, diameter, diameter);
+
         g2d.setColor(foregroundColor);
-        
-        g2d.fillOval(
-            (int) Math.round(drawX),
-            (int) Math.round(drawY),
-            (int) Math.round(diameter),
-            (int) Math.round(diameter)
-        );
+        g2d.fill(ellipse);
     }
 
     private void drawRotatedPolygon(Graphics2D g2d, Point2D[] rotatedCorners, AffineTransform toRot) {
