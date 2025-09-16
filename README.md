@@ -74,11 +74,10 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
      ```
 
 2. **Configure Settings**  
-   - **Pattern (TYPE):** Choose between Dots, Squares, Triangles, Lines, or Sine Waves.  
-   - **Operation Mode (OpType):** Choose the processing mode (Default, CMYK, etc.).  
+   - **Pattern:** Choose between Dots, Squares, Triangles, Lines, or Sine Waves.  
+   - **Operation Mode:** Choose the processing mode (Default, CMYK, etc.).  
    - **Scale Slider:** Adjust the size of the halftone elements (0 = minimum, 100 = maximum).  
    - **Angle Slider:** Define the angle of the halftone pattern (0°–360°).  
-   - **Color Mode (CMYK Toggle):** Enable/disable per-channel halftone.  
    - **Color Pickers:** Select background and foreground colors for halftone elements.
 
    <p align="center">
@@ -129,7 +128,7 @@ Below is a high-level overview of the halftone algorithm:
 4. **CMYK or RGB Processing (Optional)**  
    - In CMYK mode, repeat steps 1–3 for each channel (Cyan, Magenta, Yellow, Key/Black) using fixed angles.  
    - In RGB mode, halftone is applied directly to the original image channels.  
-   - Finally, channels are blended using multiply to create the full-color halftone output.
+   - Finally, channels are blended using multiply/screen to create the full-color halftone output.
 
 ---
 
