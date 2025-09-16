@@ -6,8 +6,8 @@ Windows/DropDownWindow$3$1.class
 Halftone/GetDataFromImage.class
 Windows/ImageViewer$ImagePanel.class
 Windows/ImageViewer.class
-Data/TYPE.class
 Halftone/Util/ResizeImage.class
+Data/TYPE.class
 Halftone/Operations.class
 Windows/DropDownWindow$2.class
 Halftone/Operations$Timeable.class
@@ -23,3 +23,4 @@ Windows/DropDownWindow$1.class
 Windows/DropDownWindow$3.class
 FileManager/PngSaver.class
 FileManager/PngConverter.class
+Data/OpType.class

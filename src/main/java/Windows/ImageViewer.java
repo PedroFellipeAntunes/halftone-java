@@ -6,25 +6,17 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageViewer extends JDialog {
-    private ImagePanel panel;
-    private JPanel buttonPanel;
-    private JButton saveButton;
-    private JButton goBackButton;
-    
-    private final Operations operations;
-    
-    private boolean goBack = false;
-    
+    private final ImagePanel panel;
+    private final JPanel buttonPanel;
+    private final JButton saveButton;
+    private final JButton goBackButton;
+    private JButton skipRemainingButton;
+        
     private final int MIN_WIDTH = 500;
     private final int MIN_HEIGHT = 500;
     
-    public boolean wentBack() {
-        return goBack;
-    }
-    
     public ImageViewer(BufferedImage image, String filePath, Operations operations) {
         super((Frame) null, "Image Viewer", true);
-        this.operations = operations;
         
         panel = new ImagePanel(image);
         panel.setBackground(new Color(61, 56, 70));
@@ -33,24 +25,35 @@ public class ImageViewer extends JDialog {
         buttonPanel.setBackground(Color.BLACK);
         
         saveButton = new JButton("Save");
-        goBackButton = new JButton("Go Back");
+        goBackButton = new JButton("Don't Save");
+        skipRemainingButton = new JButton("Skip All");
         
         setButtonsVisuals(saveButton);
         setButtonsVisuals(goBackButton);
+        setButtonsVisuals(skipRemainingButton);
         
         saveButton.addActionListener(e -> {
             operations.saveImage(image, filePath);
-            goBack = true;
+            operations.save = true;
             dispose();
         });
         
         goBackButton.addActionListener(e -> {
-            goBack = true;
+            operations.save = false;
             dispose();
         });
         
+        skipRemainingButton.addActionListener(e -> {
+            operations.skip = !operations.skip;
+            
+            Color temp = skipRemainingButton.getBackground();
+            skipRemainingButton.setBackground(skipRemainingButton.getForeground());
+            skipRemainingButton.setForeground(temp);
+        });
+
         buttonPanel.add(saveButton);
         buttonPanel.add(goBackButton);
+        buttonPanel.add(skipRemainingButton);
         
         add(buttonPanel, BorderLayout.SOUTH);
         add(panel, BorderLayout.CENTER);

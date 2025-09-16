@@ -1,7 +1,8 @@
 package Windows;
 
-import Halftone.Operations;
+import Data.OpType;
 import Data.TYPE;
+import Halftone.Operations;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.*;
@@ -27,16 +28,16 @@ public class DropDownWindow {
     private JTextField valueFieldAngle;
 
     private final JButton reflectButton = new JButton("⟳");
-    private final JButton cmykButton = new JButton("CMYK");
 
     private JComboBox<TYPE> typeComboBox;
+    private JComboBox<OpType> opTypeComboBox;
 
     // Initial states
     private final Color[] colors = {Color.WHITE, Color.BLACK};
     private int scale = 15;
     private int angle = 45;
     private TYPE type = TYPE.Dots;
-    private boolean CMYK = false;
+    private OpType opType = OpType.Default;
     
     private boolean loading = false;
     private final Font defaultFont = UIManager.getDefaults().getFont("Label.font");
@@ -44,7 +45,7 @@ public class DropDownWindow {
     public DropDownWindow() {
         initFrame();
         initDropLabel();
-        initTypeComboBox();
+        initTypeAndOpTypeComboBoxes();
         initSlidersAndControls();
         finalizeFrame();
     }
@@ -117,6 +118,7 @@ public class DropDownWindow {
     
     private void toggleControls(boolean enabled) {
         typeComboBox.setEnabled(enabled);
+        opTypeComboBox.setEnabled(enabled);
         
         sliderSize.setEnabled(enabled);
         valueFieldSize.setEnabled(enabled);
@@ -127,19 +129,25 @@ public class DropDownWindow {
         colorPicker2.setEnabled(enabled);
         
         reflectButton.setEnabled(enabled);
-        cmykButton.setEnabled(enabled);
     }
 
     private void processFiles(List<File> files) {
         final int total = files.size();
         dropLabel.setText("LOADING (1/" + total + ")");
-        
+
         setLoadingState(true);
 
         SwingWorker<Void, Integer> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws InterruptedException, InvocationTargetException {
-                Operations op = new Operations(scale, angle, type, colors, CMYK);
+                // Create Operations1 instead of Operations
+                Operations op = new Operations(
+                        scale,          // kernelSize
+                        angle,          // angle
+                        type,           // TYPE (Dots, Lines, etc.)
+                        colors,         // background/foreground
+                        opType          // OpType (CMYK, RGB)
+                );
 
                 for (int i = 0; i < total; i++) {
                     final File file = files.get(i);
@@ -190,29 +198,48 @@ public class DropDownWindow {
         resetTimer.start();
     }
 
-    private void initTypeComboBox() {
+    // Initialize both TYPE and OpType ComboBoxes to occupy full width
+    private void initTypeAndOpTypeComboBoxes() {
+        // TYPE ComboBox setup
         typeComboBox = new JComboBox<>(TYPE.values());
         typeComboBox.setSelectedItem(type);
         typeComboBox.setBackground(Color.BLACK);
         typeComboBox.setForeground(Color.WHITE);
         typeComboBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-
         typeComboBox.addActionListener(e -> {
             if (!loading) {
                 type = (TYPE) typeComboBox.getSelectedItem();
             }
         });
-
         customizeComboBoxUI(typeComboBox);
 
-        JPanel comboPanel = new JPanel(new BorderLayout());
-        comboPanel.setBackground(Color.BLACK);
-        comboPanel.add(typeComboBox, BorderLayout.CENTER);
+        // OpType ComboBox setup
+        opTypeComboBox = new JComboBox<>(OpType.values());
+        opTypeComboBox.setSelectedItem(opType);
+        opTypeComboBox.setBackground(Color.BLACK);
+        opTypeComboBox.setForeground(Color.WHITE);
+        opTypeComboBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        opTypeComboBox.addActionListener(e -> {
+            if (!loading) {
+                opType = (OpType) opTypeComboBox.getSelectedItem();
+            }
+        });
+        customizeComboBoxUI(opTypeComboBox);
 
+        // Panel to hold both ComboBoxes vertically
+        JPanel comboPanel = new JPanel();
+        comboPanel.setBackground(Color.BLACK);
+        comboPanel.setLayout(new GridLayout(1, 2, 0, 0)); // 1 row, 2 columns
+
+        // Add TYPE first, then OpType
+        comboPanel.add(typeComboBox);
+        comboPanel.add(opTypeComboBox);
+
+        // Make sure the panel stretches horizontally in BorderLayout.NORTH
         frame.add(comboPanel, BorderLayout.NORTH);
     }
 
-    private void customizeComboBoxUI(JComboBox<TYPE> comboBox) {
+    private <E extends Enum<E>> void customizeComboBoxUI(JComboBox<E> comboBox) {
         comboBox.setUI(new BasicComboBoxUI() {
             @Override
             protected ComboBoxEditor createEditor() {
@@ -220,7 +247,7 @@ public class DropDownWindow {
                 Component editorComponent = editor.getEditorComponent();
                 editorComponent.setBackground(Color.BLACK);
                 editorComponent.setForeground(Color.WHITE);
-                
+
                 return editor;
             }
 
@@ -236,18 +263,18 @@ public class DropDownWindow {
                 JScrollPane scrollPane = (JScrollPane) popup.getComponent(0);
                 JScrollBar bar = scrollPane.getVerticalScrollBar();
                 bar.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.WHITE));
-                
+
                 bar.setUI(new BasicScrollBarUI() {
                     @Override
                     protected JButton createDecreaseButton(int orientation) {
                         return createArrowButton(SwingConstants.NORTH);
                     }
-                    
+
                     @Override
                     protected JButton createIncreaseButton(int orientation) {
                         return createArrowButton(SwingConstants.SOUTH);
                     }
-                    
+
                     @Override
                     protected void configureScrollBarColors() {
                         this.thumbColor = Color.WHITE;
@@ -267,9 +294,8 @@ public class DropDownWindow {
                         Color.WHITE,
                         Color.BLACK
                 );
-                
+
                 arrow.setBorder(BorderFactory.createEmptyBorder());
-                
                 return arrow;
             }
 
@@ -281,9 +307,8 @@ public class DropDownWindow {
                         Color.WHITE,
                         Color.BLACK
                 );
-                
+
                 arrow.setBorder(BorderFactory.createEmptyBorder());
-                
                 return arrow;
             }
         });
@@ -435,20 +460,10 @@ public class DropDownWindow {
             sliderAngle.setValue(newAngle);
         });
         
-        // ----- CMYK Toggle Button -----
-        setButtonVisuals(cmykButton, 50, 50);
-        updateCmykButtonColors(); // initialize colors based on default CMYK=true
-        
-        cmykButton.addActionListener(e -> {
-            CMYK = !CMYK;
-            updateCmykButtonColors();
-        });
-        
-        // ----- Panel for Reflect and CMYK Buttons -----
+        // ----- Panel for Buttons -----
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         buttonPanel.setBackground(Color.BLACK);
         buttonPanel.add(reflectButton);
-        buttonPanel.add(cmykButton);
 
         // ----- General Panel for Controls -----
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
@@ -468,16 +483,6 @@ public class DropDownWindow {
         button.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         button.setFocusPainted(false);
         button.setPreferredSize(new Dimension(width, height));
-    }
-    
-    private void updateCmykButtonColors() {
-        if (CMYK) {
-            cmykButton.setBackground(Color.WHITE);
-            cmykButton.setForeground(Color.BLACK);
-        } else {
-            cmykButton.setBackground(Color.BLACK);
-            cmykButton.setForeground(Color.WHITE);
-        }
     }
 
     private void setButtonsVisualsColors(JButton button, Color color) {

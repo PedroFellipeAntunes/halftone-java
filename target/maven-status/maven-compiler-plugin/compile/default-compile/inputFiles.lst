@@ -1,5 +1,6 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ColorAccumulator.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ImageData.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/OpType.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/TYPE.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/Grayscale.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngConverter.java
