@@ -1,6 +1,6 @@
 # Halftone
 
-This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, with dots, lines or sine waves as the pattern. This code uses a codebase from my other project to [separate the CMYK colors](https://github.com/PedroFellipeAntunes/color-separator-java).
+This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, using patterns like dots, lines, squares, triangles, or sine waves. This version introduces a **dual ComboBox interface** for selecting both the **halftone type** (`TYPE`) and **operation mode** (`OpType`), allowing full RGB or CMYK processing. The project leverages code from [my other project to separate CMYK/RGB colors](https://github.com/PedroFellipeAntunes/color-separator-java).
 
 <p align="center">
   <table align="center">
@@ -47,14 +47,21 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 
 - **Apply Halftone Effect**  
   - Patterns: `Dots`, `Squares`, `Triangles`, `Lines`, `Sine Waves`.
-- **Full CMYK Processing**  
-  - Separates image into CMYK channels, applies halftone at predetermined angles, and merges using multiply blend.
+- **Full CMYK and RGB Processing**  
+  - Separates image into CMYK channels (or keeps RGB), applies halftone at fixed angles, and merges using multiply blend.
+- **Dual ComboBox Interface**  
+  - Select both **TYPE** (pattern) and **OpType** (operation mode) without affecting layout.  
+  - ComboBoxes now occupy the **full width** of the control panel for better usability.
 - **Drag & Drop Support**  
   - Simply drag images into the interface to process them.
 - **Interactive Controls**  
   - Adjust halftone scale (0–100) and angle (0°–360°) via sliders for live preview.
 - **Batch Processing**  
   - Drop multiple images at once; each will be processed and automatically saved.
+- **Color Picker Support**  
+  - Background and foreground colors can be selected for custom halftone effects.
+- **Live Feedback**  
+  - Real-time update of processing state, preventing controls from being modified mid-processing.
 
 ---
 
@@ -67,10 +74,12 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
      ```
 
 2. **Configure Settings**  
-   - **Pattern:** Choose between Dots, Squares, Triangles, Lines or Sine Waves.  
+   - **Pattern (TYPE):** Choose between Dots, Squares, Triangles, Lines, or Sine Waves.  
+   - **Operation Mode (OpType):** Choose the processing mode (Default, CMYK, etc.).  
    - **Scale Slider:** Adjust the size of the halftone elements (0 = minimum, 100 = maximum).  
    - **Angle Slider:** Define the angle of the halftone pattern (0°–360°).  
-   - **Color Mode:** Toggle “CMYK” to enable or disable per-channel processing.
+   - **Color Mode (CMYK Toggle):** Enable/disable per-channel halftone.  
+   - **Color Pickers:** Select background and foreground colors for halftone elements.
 
    <p align="center">
      <img src="images/steps/interface.png" width="450" alt="Interface">
@@ -81,7 +90,7 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 
 4. **Preview and Save**  
    - A live preview will display the result.  
-   - To save, click **Save** or close the window. Processed images are saved in the same folder as the originals with this pattern:  
+   - Processed images are automatically saved in the same folder as the originals using this pattern:  
      ```
      originalname_Halftone[type,scale,angle].png
      ```
@@ -91,17 +100,15 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 
 ## How It Works
 
-Below is a high-level overview of the halftone algorithm (example based on line/sine patterns):
+Below is a high-level overview of the halftone algorithm:
 
 1. **Kernel Generation**  
    - Divide the image into square blocks (“kernels”), each rotated by the chosen angle.  
-   - For each kernel, sum up the RGB values and compute the average.
+   - For each kernel, sum the RGB values and compute the average.
 
    <p align="center">
      <img src="images/steps/Step1.png" width="650" alt="Step 1: Kernel Generation">
    </p>
-
-   Try out my simulation in real time of the kernel calculation by running the `kernel_simulator.html`!
 
 2. **Luminance Calculation**  
    - Within each kernel, convert the average color to luminance.  
@@ -119,9 +126,10 @@ Below is a high-level overview of the halftone algorithm (example based on line/
      <img src="images/steps/Step3.png" width="650" alt="Step 3: Polygon Filling">
    </p>
 
-4. **CMYK Processing (Optional)**  
-   - When CMYK mode is enabled, repeat steps 1–3 for each channel (Cyan, Magenta, Yellow, Key/Black) using fixed angles (e.g., 15°, 75°, 0°, 45°).  
-   - Finally, blend all channels using a multiply operation to obtain the full-color halftone result.
+4. **CMYK or RGB Processing (Optional)**  
+   - In CMYK mode, repeat steps 1–3 for each channel (Cyan, Magenta, Yellow, Key/Black) using fixed angles.  
+   - In RGB mode, halftone is applied directly to the original image channels.  
+   - Finally, channels are blended using multiply to create the full-color halftone output.
 
 ---
 
@@ -144,16 +152,14 @@ Below is a high-level overview of the halftone algorithm (example based on line/
   <img src="images/tests/Blade-Runner-2049-1753_top.png" width="650" alt="Example 6">
 </p>
 
-Overlaying halftones at opposing angles with the dark layer at 50% opacity to create a cross-hatching effect.
+Overlaying halftones at opposing angles with a dark layer at 50% opacity creates a cross-hatching effect.
 
 <p align="center">
   <img src="images/tests/Blade-Runner-2049-1753_Example1.png" width="650" alt="Example 7">
 </p>
 
-This effect can be further enhanced by generating an outline (e.g., with Extended Difference of Gaussians).
+This effect can be further enhanced by generating an outline using Extended Difference of Gaussians (XDoG).
 
 <p align="center">
   <img src="images/tests/Blade-Runner-2049-1753_Example2.png" width="650" alt="Example 8">
 </p>
-
----
