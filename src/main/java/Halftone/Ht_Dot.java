@@ -88,35 +88,42 @@ public class Ht_Dot {
     }
 
     /**
-     * Applies an axis-aligned square halftone pattern over the input image
-     * using precomputed color accumulators. Each square’s side length is at most the kernelSize.
+     * Applies a regular polygon halftone pattern over the input image using
+     * precomputed color accumulators. The polygon size is scaled according to
+     * grayscale intensity and alpha, and the number of sides is configurable.
+     * Each polygon is aligned consistently within its kernel cell.
      *
-     * @param input The original image to overlay with squares.
+     * @param input The original image to overlay with polygons.
      * @param kernelSize The size of each square kernel (in pixels).
      * @param data Object containing rotation, bounds and color average data of
-     * input image.
-     * @return A new BufferedImage (type ARGB) containing only the square pattern.
+     * the input image.
+     * @param sides Number of polygon sides (must be >= 3).
+     * @return A new BufferedImage (type ARGB) containing only the polygon
+     * pattern.
      */
-    public BufferedImage applySquarePattern(BufferedImage input, int kernelSize, ImageData data) {
+    public BufferedImage applyPolygonPattern(BufferedImage input, int kernelSize, ImageData data, int sides) {
+        if (sides < 3) {
+            throw new IllegalArgumentException("Polygon must have at least 3 sides.");
+        }
+
         int width = input.getWidth();
         int height = input.getHeight();
 
-        // Create an ARGB output image and obtain its Graphics2D context
         BufferedImage outputImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = outputImg.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Fill background with solid color
         fillBackground(g2d, width, height);
 
-        // Unpack rotated bounds
         double minXr = data.bounds[0];
         double minYr = data.bounds[2];
 
         int numKernels = data.avgGrid.length;
         int numSegments = data.avgGrid[0].length;
 
-        // Draw one square per kernel cell
+        // Maximum possible polygon radius = half diagonal of kernel (same as dot)
+        double maxRadius = Math.sqrt(kernelSize * kernelSize + kernelSize * kernelSize) / 2.0;
+
         for (int kernelRow = 0; kernelRow < numKernels; kernelRow++) {
             for (int kernelCol = 0; kernelCol < numSegments; kernelCol++) {
                 ColorAccumulator acc = data.avgGrid[kernelRow][kernelCol];
@@ -129,26 +136,35 @@ public class Ht_Dot {
                 int alpha = acc.getAverage().getAlpha();
                 double gray = 255 - acc.getGrayScale();
 
-                // Side half-length based on grayscale and alpha,
-                // capped so full side = kernelSize when gray=0 and alpha=255
-                double halfSide = (gray / 255.0) * (alpha / 255.0) * (kernelSize / 2.0);
+                // Scale radius exactly like applyDotPattern
+                double radius = (gray / 255.0) * (alpha / 255.0) * maxRadius;
                 
-                if (isTooSmall(halfSide)) continue; // Prevents smaller than pixel
+                if (isTooSmall(radius)) {
+                    continue;
+                }
 
                 // Compute center of the kernel in rotated coordinates
                 Point2D centerRot = computeKernelCenterRotated(kernelRow, kernelCol, kernelSize, minXr, minYr);
 
-                // Define four corners of the axis-aligned square in rotated space:
-                // top-left, top-right, bottom-right, bottom-left
-                Point2D[] squareCorners = {
-                    new Point2D.Double(centerRot.getX() - halfSide, centerRot.getY() - halfSide),
-                    new Point2D.Double(centerRot.getX() + halfSide, centerRot.getY() - halfSide),
-                    new Point2D.Double(centerRot.getX() + halfSide, centerRot.getY() + halfSide),
-                    new Point2D.Double(centerRot.getX() - halfSide, centerRot.getY() + halfSide)
-                };
+                // Square's top-left corner is center - halfSide in X and Y
+                // We use the vector from center to that point to determine base angle
+                double halfSideForAngle = kernelSize / 2.0; // full kernel half
+                double dx = -halfSideForAngle;
+                double dy = -halfSideForAngle;
+                double startAngle = Math.atan2(dy, dx); // direction of first corner
 
-                // Draw the square via helper (applies rotation transform)
-                drawRotatedPolygon(g2d, squareCorners, data.rotation);
+                // Now generate polygon vertices with this base angle
+                Point2D[] polygonCorners = new Point2D[sides];
+                double angleStep = 2 * Math.PI / sides;
+
+                for (int i = 0; i < sides; i++) {
+                    double angle = startAngle + i * angleStep;
+                    double x = centerRot.getX() + radius * Math.cos(angle);
+                    double y = centerRot.getY() + radius * Math.sin(angle);
+                    polygonCorners[i] = new Point2D.Double(x, y);
+                }
+
+                drawRotatedPolygon(g2d, polygonCorners, data.rotation);
             }
         }
 
@@ -158,18 +174,19 @@ public class Ht_Dot {
     }
     
     /**
-     * Applies an axis-aligned equilateral triangle halftone pattern over the
-     * input image using precomputed color accumulators. Each triangle’s size is
-     * scaled by the grayscale.
+     * Applies an alternating equilateral triangle halftone pattern over the input
+     * image using precomputed color accumulators. The triangles scale their size
+     * according to grayscale intensity and alpha. Every other column alternates
+     * orientation (pointing up or down), producing a zigzag tiling effect.
      *
      * @param input The original image to overlay with triangles.
      * @param kernelSize The size of each square kernel (in pixels).
      * @param data Object containing rotation, bounds and color average data of
      * input image.
-     * @return A new BufferedImage (type ARGB) containing only the triangle
+     * @return A new BufferedImage (type ARGB) containing only the alternating triangle
      * pattern.
      */
-    public BufferedImage applyTrianglePattern(BufferedImage input, int kernelSize, ImageData data) {
+    public BufferedImage applyAlternatingTrianglePattern(BufferedImage input, int kernelSize, ImageData data) {
         int width = input.getWidth();
         int height = input.getHeight();
 

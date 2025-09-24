@@ -4,11 +4,13 @@ import Halftone.Util.ImageMerger;
 import Halftone.Util.ResizeImage;
 import Halftone.Util.TestMethods;
 import ColorSeparator.ColorChannelSeparator;
+import Data.ConfigData;
 import FileManager.PngReader;
 import FileManager.PngSaver;
 import Windows.ImageViewer;
 import Data.ImageData;
 import Data.OpType;
+import Data.TYPE;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -19,6 +21,7 @@ public class Operations {
     private final double angle;
     private final Data.TYPE type;
     private final OpType opType;
+    private final int polySides;
     private Color backgroundColor;
     private Color foregroundColor;
 
@@ -28,19 +31,17 @@ public class Operations {
     /**
      * Initializes the Halftone Operations instance with the desired parameters.
      *
-     * @param kernelSize Size of each halftone kernel in pixels.
-     * @param angle Rotation angle (degrees) to apply before halftoning.
-     * @param type Halftone type (Dots, Lines, Squares, Triangles, Sine).
-     * @param colors Two-color array: [0] = background color, [1] = foreground color.
-     * @param opType Operation mode: Default, CMYK, RGB.
+     * @param config ConfigData object which contains all the possible configuration
+     * variables for the halftone process.
      */
-    public Operations(int kernelSize, double angle, Data.TYPE type, Color[] colors, OpType opType) {
-        this.kernelSize = kernelSize;
-        this.angle = angle;
-        this.type = type;
-        this.backgroundColor = colors[0];
-        this.foregroundColor = colors[1];
-        this.opType = opType;
+    public Operations(ConfigData config) {
+        this.kernelSize = config.scale;
+        this.angle = config.angle;
+        this.type = config.type;
+        this.backgroundColor = config.colors[0];
+        this.foregroundColor = config.colors[1];
+        this.opType = config.opType;
+        this.polySides = config.polySides;
     }
 
     /**
@@ -105,18 +106,26 @@ public class Operations {
         PngSaver saver = new PngSaver();
         String prefix;
 
-        // 1) Build filename prefix based on operation type
         switch (opType) {
-            case CMYK -> prefix = String.format("Halftone[%s,%d,CMYK]", type, kernelSize);
-            case RGB -> prefix = String.format("Halftone[%s,%d,RGB]", type, kernelSize);
-            default -> prefix = String.format("Halftone[%s,%d,%.1f]", type, kernelSize, angle);
+            case CMYK ->
+                prefix = String.format("Halftone[%s,%d,CMYK]", formatTypeName(), kernelSize);
+            case RGB ->
+                prefix = String.format("Halftone[%s,%d,RGB]", formatTypeName(), kernelSize);
+            default ->
+                prefix = String.format("Halftone[%s,%d,%.1f]", formatTypeName(), kernelSize, angle);
         }
 
-        // 2) Save the image using PngSaver utility
         saver.saveToFile(prefix, filePath, image);
     }
 
     // --------------------------- Private/internal methods ---------------------------
+    private String formatTypeName() {
+        if (type == TYPE.Polygons) {
+            return String.format("%s(%d)", type, polySides);
+        }
+        
+        return type.toString();
+    }
 
     private BufferedImage process(BufferedImage expanded) {
         // Create ImageData object with kernel info and rotation
@@ -214,19 +223,19 @@ public class Operations {
                 
                 return dotGen.applyDotPattern(image, kernelSize, id);
             }
-            case Squares -> {
+            case AlternatingTriangles -> {
                 Ht_Dot dotGen = new Ht_Dot();
                 dotGen.backgroundColor = backgroundColor;
                 dotGen.foregroundColor = foregroundColor;
                 
-                return dotGen.applySquarePattern(image, kernelSize, id);
+                return dotGen.applyAlternatingTrianglePattern(image, kernelSize, id);
             }
-            case Triangles -> {
+            case Polygons -> {
                 Ht_Dot dotGen = new Ht_Dot();
                 dotGen.backgroundColor = backgroundColor;
                 dotGen.foregroundColor = foregroundColor;
                 
-                return dotGen.applyTrianglePattern(image, kernelSize, id);
+                return dotGen.applyPolygonPattern(image, kernelSize, id, polySides);
             }
             case Lines -> {
                 Ht_Line lineGen = new Ht_Line();

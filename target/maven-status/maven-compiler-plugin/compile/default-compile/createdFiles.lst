@@ -14,9 +14,11 @@ Halftone/Operations$Timeable.class
 Halftone/Util/ImageMerger.class
 FileManager/PngReader.class
 FileManager/Grayscale.class
+Windows/PolygonSidesDialog.class
 Halftone/Ht_Line$InterpolatedResult.class
 Halftone/Ht_Dot.class
 Windows/DropDownWindow.class
+Data/ConfigData.class
 Data/ColorAccumulator.class
 Data/ImageData.class
 Windows/DropDownWindow$1.class

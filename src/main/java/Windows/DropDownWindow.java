@@ -1,5 +1,6 @@
 package Windows;
 
+import Data.ConfigData;
 import Data.OpType;
 import Data.TYPE;
 import Halftone.Operations;
@@ -33,11 +34,15 @@ public class DropDownWindow {
     private JComboBox<OpType> opTypeComboBox;
 
     // Initial states
-    private final Color[] colors = {Color.WHITE, Color.BLACK};
-    private int scale = 15;
-    private int angle = 45;
-    private TYPE type = TYPE.Dots;
-    private OpType opType = OpType.Default;
+    private final int[] limits = {3, 8};
+    private final ConfigData config = new ConfigData(
+        15, // config.scale
+        45, // config.angle
+        TYPE.Dots, // config.type
+        OpType.Default, // config.opType
+        new Color[]{Color.WHITE, Color.BLACK}, // config.colors
+        3 // polygonSides default
+    );
     
     private boolean loading = false;
     private final Font defaultFont = UIManager.getDefaults().getFont("Label.font");
@@ -140,14 +145,12 @@ public class DropDownWindow {
         SwingWorker<Void, Integer> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws InterruptedException, InvocationTargetException {
-                // Create Operations1 instead of Operations
-                Operations op = new Operations(
-                        scale,          // kernelSize
-                        angle,          // angle
-                        type,           // TYPE (Dots, Lines, etc.)
-                        colors,         // background/foreground
-                        opType          // OpType (CMYK, RGB)
-                );
+                // if Polygons, open dialog and get value (dialog is modal and changes object value)
+                if (config.type == TYPE.Polygons) {
+                    PolygonSidesDialog.showDialog(frame, config, limits);
+                }
+                
+                Operations op = new Operations(config);
 
                 for (int i = 0; i < total; i++) {
                     final File file = files.get(i);
@@ -202,26 +205,27 @@ public class DropDownWindow {
     private void initTypeAndOpTypeComboBoxes() {
         // TYPE ComboBox setup
         typeComboBox = new JComboBox<>(TYPE.values());
-        typeComboBox.setSelectedItem(type);
+        typeComboBox.setSelectedItem(config.type);
         typeComboBox.setBackground(Color.BLACK);
         typeComboBox.setForeground(Color.WHITE);
         typeComboBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         typeComboBox.addActionListener(e -> {
             if (!loading) {
-                type = (TYPE) typeComboBox.getSelectedItem();
+                TYPE selected = (TYPE) typeComboBox.getSelectedItem();
+                config.type = selected;
             }
         });
         customizeComboBoxUI(typeComboBox);
 
         // OpType ComboBox setup
         opTypeComboBox = new JComboBox<>(OpType.values());
-        opTypeComboBox.setSelectedItem(opType);
+        opTypeComboBox.setSelectedItem(config.opType);
         opTypeComboBox.setBackground(Color.BLACK);
         opTypeComboBox.setForeground(Color.WHITE);
         opTypeComboBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         opTypeComboBox.addActionListener(e -> {
             if (!loading) {
-                opType = (OpType) opTypeComboBox.getSelectedItem();
+                config.opType = (OpType) opTypeComboBox.getSelectedItem();
             }
         });
         customizeComboBoxUI(opTypeComboBox);
@@ -316,7 +320,7 @@ public class DropDownWindow {
 
     private void initSlidersAndControls() {
         // ----- Scale Slider -----
-        sliderSize = new JSlider(JSlider.HORIZONTAL, 0, 100, scale);
+        sliderSize = new JSlider(JSlider.HORIZONTAL, 0, 100, config.scale);
         sliderSize.setMajorTickSpacing(25);
         sliderSize.setMinorTickSpacing(10);
         sliderSize.setPaintTicks(true);
@@ -324,7 +328,7 @@ public class DropDownWindow {
         sliderSize.setBackground(Color.BLACK);
         sliderSize.setForeground(Color.WHITE);
 
-        valueFieldSize = new JTextField(String.valueOf(scale));
+        valueFieldSize = new JTextField(String.valueOf(config.scale));
         valueFieldSize.setForeground(Color.WHITE);
         valueFieldSize.setBackground(Color.BLACK);
         valueFieldSize.setFont(defaultFont);
@@ -333,8 +337,8 @@ public class DropDownWindow {
 
         sliderSize.addChangeListener(e -> {
             if (!loading) {
-                scale = sliderSize.getValue();
-                valueFieldSize.setText(String.valueOf(scale));
+                config.scale = sliderSize.getValue();
+                valueFieldSize.setText(String.valueOf(config.scale));
             }
         });
 
@@ -370,7 +374,7 @@ public class DropDownWindow {
         sliderPanelSize.add(valueFieldSize, BorderLayout.EAST);
 
         // ----- Angle Slider -----
-        sliderAngle = new JSlider(JSlider.HORIZONTAL, 0, 360, angle);
+        sliderAngle = new JSlider(JSlider.HORIZONTAL, 0, 360, config.angle);
         sliderAngle.setMajorTickSpacing(90);
         sliderAngle.setMinorTickSpacing(45);
         sliderAngle.setPaintTicks(true);
@@ -378,7 +382,7 @@ public class DropDownWindow {
         sliderAngle.setBackground(Color.BLACK);
         sliderAngle.setForeground(Color.WHITE);
 
-        valueFieldAngle = new JTextField(String.valueOf(angle));
+        valueFieldAngle = new JTextField(String.valueOf(config.angle));
         valueFieldAngle.setForeground(Color.WHITE);
         valueFieldAngle.setBackground(Color.BLACK);
         valueFieldAngle.setFont(defaultFont);
@@ -387,8 +391,8 @@ public class DropDownWindow {
 
         sliderAngle.addChangeListener(e -> {
             if (!loading) {
-                angle = sliderAngle.getValue();
-                valueFieldAngle.setText(String.valueOf(angle));
+                config.angle = sliderAngle.getValue();
+                valueFieldAngle.setText(String.valueOf(config.angle));
             }
         });
 
@@ -424,23 +428,23 @@ public class DropDownWindow {
         sliderPanelAngle.add(valueFieldAngle, BorderLayout.EAST);
 
         // ----- Color Pickers -----
-        setButtonsVisualsColors(colorPicker1, colors[0]);
-        setButtonsVisualsColors(colorPicker2, colors[1]);
+        setButtonsVisualsColors(colorPicker1, config.colors[0]);
+        setButtonsVisualsColors(colorPicker2, config.colors[1]);
 
         colorPicker1.addActionListener(e -> {
-            Color chosen = JColorChooser.showDialog(frame, "Choose Color Background", colors[0]);
+            Color chosen = JColorChooser.showDialog(frame, "Choose Color Background", config.colors[0]);
             
             if (chosen != null) {
-                colors[0] = chosen;
+                config.colors[0] = chosen;
                 colorPicker1.setBackground(chosen);
             }
         });
 
         colorPicker2.addActionListener(e -> {
-            Color chosen = JColorChooser.showDialog(frame, "Choose Color Foreground", colors[1]);
+            Color chosen = JColorChooser.showDialog(frame, "Choose Color Foreground", config.colors[1]);
             
             if (chosen != null) {
-                colors[1] = chosen;
+                config.colors[1] = chosen;
                 colorPicker2.setBackground(chosen);
             }
         });
@@ -454,7 +458,7 @@ public class DropDownWindow {
         setButtonVisuals(reflectButton, 50, 50);
         
         reflectButton.addActionListener(e -> {
-            int newAngle = ((angle % 360) + 360) % 360;
+            int newAngle = ((config.angle % 360) + 360) % 360;
             newAngle = (180 - newAngle + 360) % 360;
             
             sliderAngle.setValue(newAngle);
@@ -476,7 +480,7 @@ public class DropDownWindow {
 
         frame.add(controlPanel, BorderLayout.SOUTH);
     }
-
+    
     private void setButtonVisuals(JButton button, int width, int height) {
         button.setBackground(Color.BLACK);
         button.setForeground(Color.WHITE);

@@ -1,4 +1,5 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ColorAccumulator.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ConfigData.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ImageData.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/OpType.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/TYPE.java
@@ -16,3 +17,4 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Main.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/DropDownWindow.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/ImageViewer.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/PolygonSidesDialog.java

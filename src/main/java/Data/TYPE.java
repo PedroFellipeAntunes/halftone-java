@@ -2,8 +2,8 @@ package Data;
 
 public enum TYPE {
     Dots,
-    Squares,
-    Triangles,
+    Polygons,
+    AlternatingTriangles,
     Lines,
     SineWave;
 }
