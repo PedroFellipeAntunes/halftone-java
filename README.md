@@ -48,7 +48,7 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 - **Apply Halftone Effect**  
   - Patterns: `Dots`, `Squares`, `Triangles`, `Lines`, `Sine Waves`.
 - **Full CMYK/RGB Processing**  
-  - Separates image into CMYK/RGB channels, applies halftone at predetermined angles, and merges using multiply blend.
+  - Separates image into CMYK/RGB channels, applies halftone at predetermined angles, and merges using multiply/screen blend.
 - **Drag & Drop Support**  
   - Simply drag images into the interface to process them.
 - **Interactive Controls**  
@@ -121,7 +121,7 @@ Below is a high-level overview of the halftone algorithm (example based on line/
 
 4. **CMYK/RGB Processing (Optional)**  
    - When CMYK/RGB mode is enabled, repeat steps 1–3 for each channel using fixed angles (e.g., CMYK(15°, 75°, 0°, 45°) or RGB(0º, 60º, 120º).  
-   - Finally, blend all channels using a multiply operation to obtain the full-color halftone result.
+   - Finally, blend all channels using a multiply/screen operation to obtain the full-color halftone result.
 
 ---
 
