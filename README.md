@@ -1,6 +1,6 @@
 # Halftone
 
-This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, with dots, lines or sine waves as the pattern. This code uses a codebase from my other project to [separate the CMYK colors](https://github.com/PedroFellipeAntunes/color-separator-java).
+This project is a Java Maven application built using NetBeans IDE and Swing that applies the effect of **halftone** to an image, with dots, lines or sine waves as the pattern. This code uses a codebase from my other project to [separate the CMYK/RGB colors](https://github.com/PedroFellipeAntunes/color-separator-java).
 
 <p align="center">
   <table align="center">
@@ -47,8 +47,8 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 
 - **Apply Halftone Effect**  
   - Patterns: `Dots`, `Squares`, `Triangles`, `Lines`, `Sine Waves`.
-- **Full CMYK Processing**  
-  - Separates image into CMYK channels, applies halftone at predetermined angles, and merges using multiply blend.
+- **Full CMYK/RGB Processing**  
+  - Separates image into CMYK/RGB channels, applies halftone at predetermined angles, and merges using multiply blend.
 - **Drag & Drop Support**  
   - Simply drag images into the interface to process them.
 - **Interactive Controls**  
@@ -70,7 +70,7 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
    - **Pattern:** Choose between Dots, Squares, Triangles, Lines or Sine Waves.  
    - **Scale Slider:** Adjust the size of the halftone elements (0 = minimum, 100 = maximum).  
    - **Angle Slider:** Define the angle of the halftone pattern (0°–360°).  
-   - **Color Mode:** Toggle “CMYK” to enable or disable per-channel processing.
+   - **Color Mode:** Choose between Default, CMYK or RGB for color processing.
 
    <p align="center">
      <img src="images/steps/interface.png" width="450" alt="Interface">
@@ -119,8 +119,8 @@ Below is a high-level overview of the halftone algorithm (example based on line/
      <img src="images/steps/Step3.png" width="650" alt="Step 3: Polygon Filling">
    </p>
 
-4. **CMYK Processing (Optional)**  
-   - When CMYK mode is enabled, repeat steps 1–3 for each channel (Cyan, Magenta, Yellow, Key/Black) using fixed angles (e.g., 15°, 75°, 0°, 45°).  
+4. **CMYK/RGB Processing (Optional)**  
+   - When CMYK/RGB mode is enabled, repeat steps 1–3 for each channel using fixed angles (e.g., CMYK(15°, 75°, 0°, 45°) or RGB(0º, 60º, 120º).  
    - Finally, blend all channels using a multiply operation to obtain the full-color halftone result.
 
 ---
