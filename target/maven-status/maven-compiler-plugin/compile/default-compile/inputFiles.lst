@@ -1,6 +1,8 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ColorAccumulator.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ConfigData.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/HexPackingResult.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ImageData.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/KernelStipplingContext.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/OpType.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/TYPE.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/Grayscale.java
@@ -13,8 +15,10 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Operations.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ImageMerger.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ResizeImage.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/StipplingHelper.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/TestMethods.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Main.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Timing.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/DropDownWindow.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/GenericInputDialog.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/ImageViewer.java
-/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/PolygonSidesDialog.java

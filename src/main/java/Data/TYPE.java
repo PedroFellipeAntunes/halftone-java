@@ -4,6 +4,7 @@ public enum TYPE {
     Dots,
     Polygons,
     AlternatingTriangles,
+    Stippling,
     Lines,
     SineWave;
 }

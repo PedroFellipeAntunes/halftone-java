@@ -2,10 +2,11 @@ package Halftone;
 
 import Data.ColorAccumulator;
 import Data.ImageData;
+import Data.KernelStipplingContext;
+import Halftone.Util.StipplingHelper;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -267,7 +268,120 @@ public class Ht_Dot {
         return outputImg;
     }
     
+    /**
+     * Applies a stippling halftone pattern over the input image using
+     * precomputed color accumulators. The stippling density is proportional to
+     * local darkness and a max density value.
+     *
+     * @param input The original image to overlay with the stippling pattern.
+     * @param kernelSize The size of each kernel cell in pixels.
+     * @param data Object containing rotation, bounds, and average color data of
+     * the input image.
+     * @param density Maximum number of dots per kernel (in dark areas).
+     * @return A new ARGB BufferedImage containing only the stippling overlay.
+     */
+    public BufferedImage applyStipplingPattern(BufferedImage input, int kernelSize, ImageData data, int density) {
+        int width = input.getWidth();
+        int height = input.getHeight();
+
+        BufferedImage overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = overlay.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        fillBackground(g2d, width, height);
+        g2d.setColor(foregroundColor);
+
+        if (density <= 0) {
+            g2d.dispose();
+            
+            return overlay;
+        }
+
+        double minXr = data.bounds[0];
+        double minYr = data.bounds[2];
+
+        int numKernels = data.avgGrid.length;
+        int numSegments = data.avgGrid[0].length;
+
+        double diameter = new StipplingHelper().diameterForMaxPoints(kernelSize, density);
+        
+        for (int kr = 0; kr < numKernels; kr++) {
+            for (int kc = 0; kc < numSegments; kc++) {
+                ColorAccumulator acc = data.avgGrid[kr][kc];
+                
+                if (acc == null || acc.count == 0) {
+                    continue;
+                }
+
+                double gray = acc.getGrayScale();
+                double t = (255.0 - gray) / 255.0;
+                int pointsInKernel = (int) Math.round(density * t);
+                
+                if (pointsInKernel <= 0) {
+                    continue;
+                }
+
+                double leftXr = minXr + kc * kernelSize;
+                double topYr = minYr + kr * kernelSize;
+
+                KernelStipplingContext ctx = new KernelStipplingContext(acc, kr, kc, pointsInKernel, leftXr, topYr, kernelSize, diameter, data.rotation);
+
+                drawStipplingPointsInKernel(g2d, ctx);
+            }
+        }
+
+        g2d.dispose();
+        
+        return overlay;
+    }
+
     //---------------------- Helper Methods ----------------------
+    
+    private void drawStipplingPointsInKernel(Graphics2D g2d, KernelStipplingContext ctx) {
+        for (int p = 0; p < ctx.pointsInKernel; p++) {
+            long seed = 0x9E3779B97F4A7C15L
+                    ^ (((long) ctx.kernelRow) << 48)
+                    ^ (((long) ctx.kernelCol) << 32)
+                    ^ (((long) p) << 16)
+                    ^ Double.doubleToLongBits(ctx.leftXr)
+                    ^ (Double.doubleToLongBits(ctx.topYr) << 1)
+                    ^ ((long) (ctx.acc.getAverage().getAlpha() & 0xff) << 8)
+                    ^ ((long) ((int) ctx.acc.getGrayScale()) << 24);
+
+            drawStipplingDot(g2d, ctx, seed);
+        }
+    }
+    
+    private void drawStipplingDot(Graphics2D g2d, KernelStipplingContext ctx, long seed) {
+        long r1 = ctx.splitmix.applyAsLong(seed);
+        long r2 = ctx.splitmix.applyAsLong(r1);
+
+        double u1 = (double) (r1 & ctx.MASK53) * ctx.INV_2POW53;
+        double u2 = (double) (r2 & ctx.MASK53) * ctx.INV_2POW53;
+
+        double xr = ctx.leftXr + u1 * ctx.kernelSize;
+        double yr = ctx.topYr + u2 * ctx.kernelSize;
+
+        long r3 = ctx.splitmix.applyAsLong(r2);
+        double uj = (double) (r3 & ctx.MASK53) * ctx.INV_2POW53;
+        double angle = uj * Math.PI * 2.0;
+        double jitterMag = Math.min(ctx.kernelSize * 0.12, ctx.radius * 0.8);
+
+        double offX = Math.cos(angle) * jitterMag * (0.5 + 0.5 * u1);
+        double offY = Math.sin(angle) * jitterMag * (0.5 + 0.5 * u2);
+
+        Point2D pointRot = new Point2D.Double(xr + offX, yr + offY);
+        Point2D pointOrig = invertTransform(pointRot, ctx.rotation);
+        
+        if (pointOrig == null) {
+            return;
+        }
+
+        double drawX = pointOrig.getX() - ctx.radius;
+        double drawY = pointOrig.getY() - ctx.radius;
+
+        g2d.fill(new java.awt.geom.Ellipse2D.Double(drawX, drawY, ctx.diameter, ctx.diameter));
+    }
     
     private boolean isTooSmall(double value) {
         return value < 0.25;
@@ -278,13 +392,7 @@ public class Ht_Dot {
         g2d.fillRect(0, 0, width, height);
     }
 
-    private Point2D computeKernelCenterRotated(
-            int row,
-            int col,
-            int kernelSize,
-            double minXr,
-            double minYr
-    ) {
+    private Point2D computeKernelCenterRotated(int row, int col, int kernelSize, double minXr, double minYr) {
         double centerXr = minXr + col * kernelSize + kernelSize / 2.0;
         double centerYr = minYr + row * kernelSize + kernelSize / 2.0;
         

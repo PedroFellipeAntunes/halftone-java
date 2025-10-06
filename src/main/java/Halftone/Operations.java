@@ -12,12 +12,15 @@ import Data.ImageData;
 import Data.OpType;
 import Data.TYPE;
 
+import static Util.Timing.measure;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Operations {
     private final int kernelSize;
+    private final int stipplingDensity;
     private final double angle;
     private final Data.TYPE type;
     private final OpType opType;
@@ -42,6 +45,8 @@ public class Operations {
         this.foregroundColor = config.colors[1];
         this.opType = config.opType;
         this.polySides = config.polySides;
+        
+        this.stipplingDensity = (this.kernelSize / 5) * 4; // 80%
     }
 
     /**
@@ -65,8 +70,11 @@ public class Operations {
 
         // 2) Expand image borders to avoid edge artifacts during halftone
         final BufferedImage expanded = measure("Expanding image borders", () ->
-                new ResizeImage().expandBorder(original, kernelSize)
+            new ResizeImage().expandBorder(original, kernelSize)
         );
+        
+        // Optional test
+        // testMethods(expanded, kernelSize, angle, filePath);
 
         // 3) Apply the selected processing pipeline (Default, CMYK, RGB)
         final BufferedImage halftoned = switch (opType) {
@@ -77,15 +85,17 @@ public class Operations {
 
         // 4) Crop the expanded borders to restore original dimensions
         final BufferedImage cropped = measure("Cropping image borders", () ->
-                new ResizeImage().cropBorder(halftoned, kernelSize)
+            new ResizeImage().cropBorder(halftoned, kernelSize)
         );
 
         // 5) If skip flag is active, optionally save and exit without displaying
         if (skip) {
             System.out.println("- Display skip");
+            
             if (save) {
                 saveImage(cropped, filePath);
             }
+            
             return;
         }
 
@@ -211,6 +221,11 @@ public class Operations {
 
         // Test averaging colors
         new ImageViewer(TestMethods.applyAvgColorsTest(input, angle, kernelSize, id), filePath, this);
+        
+        // Test dot packing in kernel for stippling
+        if (type == TYPE.Stippling) {
+            new ImageViewer(TestMethods.visualizePackingTest(kernelSize, stipplingDensity), filePath, this);
+        }
     }
 
     private BufferedImage applyHalftone(BufferedImage image, ImageData id) {
@@ -237,6 +252,14 @@ public class Operations {
                 
                 return dotGen.applyPolygonPattern(image, kernelSize, id, polySides);
             }
+            case Stippling -> {
+                Ht_Dot dotGen = new Ht_Dot();
+                dotGen.backgroundColor = backgroundColor;
+                dotGen.foregroundColor = foregroundColor;
+                
+                //return dotGen.applyGridStipplingTestPattern(image, kernelSize, id, stipplingDensity, false);
+                return dotGen.applyStipplingPattern(image, kernelSize, id, stipplingDensity);
+            }
             case Lines -> {
                 Ht_Line lineGen = new Ht_Line();
                 lineGen.backgroundColor = backgroundColor;
@@ -257,32 +280,5 @@ public class Operations {
     private BufferedImage readImage(String path) {
         // Reads a PNG file from disk and returns as BufferedImage
         return new PngReader().readPNG(path, false);
-    }
-
-    private <T> T measure(String label, Timeable<T> action) {
-        // Measure execution time and memory usage of the given action
-        Runtime rt = Runtime.getRuntime();
-        System.gc();
-
-        long startTime = System.currentTimeMillis();
-        long beforeMem = rt.totalMemory() - rt.freeMemory();
-        System.out.println("- " + label + " START");
-
-        T result = action.execute();
-
-        long afterMem = rt.totalMemory() - rt.freeMemory();
-        long duration = System.currentTimeMillis() - startTime;
-        double deltaMB = (afterMem - beforeMem) / 1024.0 / 1024.0;
-        double totalMB = afterMem / 1024.0 / 1024.0;
-
-        System.out.printf("- %s time: %dms | Δmem: %.2f MB | total: %.2f MB%n",
-                label, duration, deltaMB, totalMB);
-
-        return result;
-    }
-
-    @FunctionalInterface
-    private interface Timeable<T> {
-        T execute();
     }
 }

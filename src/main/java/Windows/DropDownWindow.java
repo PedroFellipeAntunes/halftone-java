@@ -34,12 +34,12 @@ public class DropDownWindow {
     private JComboBox<OpType> opTypeComboBox;
 
     // Initial states
-    private final int[] limits = {3, 8};
+    private final int[] limitsPolySides = {3, 8};
     private final ConfigData config = new ConfigData(
         15, // config.scale
         45, // config.angle
-        TYPE.Dots, // config.type
-        OpType.Default, // config.opType
+        TYPE.values()[0], // config.type
+        OpType.values()[0], // config.opType
         new Color[]{Color.WHITE, Color.BLACK}, // config.colors
         3 // polygonSides default
     );
@@ -147,7 +147,12 @@ public class DropDownWindow {
             protected Void doInBackground() throws InterruptedException, InvocationTargetException {
                 // if Polygons, open dialog and get value (dialog is modal and changes object value)
                 if (config.type == TYPE.Polygons) {
-                    PolygonSidesDialog.showDialog(frame, config, limits);
+                    // blocking call, returns Integer or null if cancelled
+                    Integer sides = GenericInputDialog.showSliderIntDialog(frame, "Polygon Sides", limitsPolySides[0], limitsPolySides[1], config.polySides);
+                    
+                    if (sides != null) {
+                        config.polySides = sides;
+                    }
                 }
                 
                 Operations op = new Operations(config);
@@ -165,6 +170,11 @@ public class DropDownWindow {
                             showError("Error processing file (" + num + "/" + total + "): " + file.getName());
                         });
 
+                        break;
+                    }
+                    
+                    // If the user chose to skip displaying and not save, stop processing further files
+                    if (op.save == false && op.skip == true) {
                         break;
                     }
 
