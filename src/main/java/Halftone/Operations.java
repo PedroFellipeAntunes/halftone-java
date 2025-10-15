@@ -19,8 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Operations {
+    private final int stipplingDensity = 68; // This is the optimal value for all kernel sizes this code uses, found it by doing some data crunching
+    
     private final int kernelSize;
-    private final int stipplingDensity;
     private final double angle;
     private final Data.TYPE type;
     private final OpType opType;
@@ -45,8 +46,6 @@ public class Operations {
         this.foregroundColor = config.colors[1];
         this.opType = config.opType;
         this.polySides = config.polySides;
-        
-        this.stipplingDensity = (this.kernelSize / 5) * 4; // 80%
     }
 
     /**
@@ -74,7 +73,7 @@ public class Operations {
         );
         
         // Optional test
-        // testMethods(expanded, kernelSize, angle, filePath);
+//        testMethods(expanded, kernelSize, angle, filePath);
 
         // 3) Apply the selected processing pipeline (Default, CMYK, RGB)
         final BufferedImage halftoned = switch (opType) {
@@ -118,11 +117,11 @@ public class Operations {
 
         switch (opType) {
             case CMYK ->
-                prefix = String.format("Halftone[%s,%d,CMYK]", formatTypeName(), kernelSize);
+                prefix = String.format("Halftone[%s;%d;CMYK]", formatTypeName(), kernelSize);
             case RGB ->
-                prefix = String.format("Halftone[%s,%d,RGB]", formatTypeName(), kernelSize);
+                prefix = String.format("Halftone[%s;%d;RGB]", formatTypeName(), kernelSize);
             default ->
-                prefix = String.format("Halftone[%s,%d,%.1f]", formatTypeName(), kernelSize, angle);
+                prefix = String.format("Halftone[%s;%d;%.1f]", formatTypeName(), kernelSize, angle);
         }
 
         saver.saveToFile(prefix, filePath, image);
