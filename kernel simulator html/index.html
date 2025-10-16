@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulator: Rotated Grid</title>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <div class="panel">
+      <h1>Simulator: Rotated Grid</h1>
+
+      <div id="controls">
+        <div class="control-left">
+          <label>Angle: <span id="angleVal">0</span>°
+            <input id="angle" type="range" min="0" max="360" value="0">
+          </label>
+
+          <label>Kernel size: <span id="kVal">20</span> px
+            <input id="kernel" type="range" min="4" max="80" value="20">
+          </label>
+
+          <label>Rect Width:
+            <input id="rectW" type="number" value="200" min="4" max="1200">
+          </label>
+
+          <label>Rect Height:
+            <input id="rectH" type="number" value="200" min="4" max="1200">
+          </label>
+
+          <label><input id="expanded" type="checkbox" checked> Expanded Border</label>
+          <label><input id="drawFullGrid" type="checkbox"> Draw Full Grid</label>
+        </div>
+
+        <div class="control-right"></div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="c"></canvas>
+      </div>
+
+      <div class="info">
+        <div id="stats" class="small"></div>
+        <div class="small">Red grid = all cells. White grid = sampled cells. Dashed green box = bounding box. Blue rectangle = original image.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
