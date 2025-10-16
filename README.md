@@ -83,9 +83,9 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
    - A live preview will display the result.  
    - To save, click **Save** or close the window. Processed images are saved in the same folder as the originals with this pattern:  
      ```
-     originalname_Halftone[type,scale,angle].png
+     originalname_Halftone[type;scale;angle].png
      ```
-   - Example: `cameraman_Halftone[Lines,50,45.0].png`
+   - Example: `cameraman_Halftone[Lines;50;45.0].png`
 
 ---
 
