@@ -17,9 +17,16 @@ import static Util.Timing.measure;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Operations {
-    private final int stipplingDensity = 68; // This is the optimal value for all kernel sizes this code uses, found it by doing some data crunching
+    private final int stipplingDensity = 85; // This is the optimal value for all kernel sizes this code uses, found it by doing some data crunching
     
     private final int kernelSize;
     private final double angle;
@@ -30,7 +37,7 @@ public class Operations {
     private Color foregroundColor;
 
     public boolean skip = false; // Flag to skip displaying
-    public boolean save = true;  // Flag to save final image automatically
+    public boolean save = true; // Flag to save final image automatically
 
     /**
      * Initializes the Halftone Operations instance with the desired parameters.
@@ -39,7 +46,7 @@ public class Operations {
      * variables for the halftone process.
      */
     public Operations(ConfigData config) {
-        this.kernelSize = config.scale;
+        this.kernelSize = config.scale >= 1 ? config.scale : 1;
         this.angle = config.angle;
         this.type = config.type;
         this.backgroundColor = config.colors[0];
@@ -141,7 +148,7 @@ public class Operations {
         ImageData id = new ImageData(expanded, kernelSize, angle);
 
         // Apply the selected halftone pattern and return processed image
-        return measure("Halftone pattern: " + type, () -> applyHalftone(expanded, id));
+        return measure("Halftone pattern: " + type, () -> applyHalftone(expanded, id, this.backgroundColor, this.foregroundColor));
     }
 
     private BufferedImage processCMYK(BufferedImage expanded) {
@@ -153,25 +160,47 @@ public class Operations {
         double[] angles = {15, 75, 0, 45};
         Color[] colors = {Color.CYAN, Color.MAGENTA, Color.YELLOW, Color.BLACK};
         String[] channelNames = {"C", "M", "Y", "K"};
+        
+        // Set white background and channel-specific foreground color
+        this.backgroundColor = Color.WHITE;
 
         BufferedImage[] halftones = new BufferedImage[angles.length];
         System.out.println("Halftone pattern: " + type + " (CMYK)");
 
+        int threads = Math.max(1, Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        List<Callable<BufferedImage>> tasks = new ArrayList<>();
+        
         // Process each CMYK channel independently
         for (int i = 0; i < angles.length; i++) {
             final int index = i;
-            final double angle = angles[index];
-            final Color fgColor = colors[index];
-            final String channel = channelNames[index];
 
-            ImageData id = new ImageData(cmyk[index], kernelSize, angle);
+            tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
+                ImageData id = new ImageData(cmyk[index], kernelSize, angles[index]);
+                
+                // Apply halftone to the current channel and store
+                return applyHalftone(cmyk[index], id, this.backgroundColor, colors[index]);
+            }));
+        }
 
-            // Set white background and channel-specific foreground color
-            this.backgroundColor = Color.WHITE;
-            this.foregroundColor = fgColor;
-
-            // Apply halftone to the current channel and store
-            halftones[index] = measure("Applying pattern: " + channel, () -> applyHalftone(cmyk[index], id));
+        try {
+            List<Future<BufferedImage>> results = executor.invokeAll(tasks);
+            
+            for (int i = 0; i < results.size(); i++) {
+                halftones[i] = results.get(i).get();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            
+            Thread.currentThread().interrupt();
+            
+            throw new RuntimeException("CMYK processing interrupted", e);
+        } catch (ExecutionException e) {
+            executor.shutdownNow();
+            
+            throw new RuntimeException("Error during CMYK channel processing", e.getCause());
+        } finally {
+            executor.shutdown();
         }
 
         // Merge all CMYK halftone images using multiply blend mode
@@ -183,31 +212,53 @@ public class Operations {
         ColorChannelSeparator ccs = new ColorChannelSeparator();
         BufferedImage[] rgb = ccs.separateRBGA(expanded, 0, false, false);
 
-        // Define rotation angles and background colors for halftone
+        // Define rotation angles and channel background colors for halftone
         double[] angles = {0, 60, 120};
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE};
         String[] channelNames = {"R", "G", "B"};
 
+        // Set black as foreground for RGB channels
+        this.foregroundColor = Color.BLACK;
+
         BufferedImage[] halftones = new BufferedImage[angles.length];
         System.out.println("Halftone pattern: " + type + " (RGB mode)");
+
+        int threads = Math.max(1, Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        List<Callable<BufferedImage>> tasks = new ArrayList<>();
 
         // Process each RGB channel independently
         for (int i = 0; i < angles.length; i++) {
             final int index = i;
-            final double angle = angles[index];
-            final Color bgColor = colors[index];
-            final String channel = channelNames[index];
 
-            ImageData id = new ImageData(rgb[index], kernelSize, angle);
+            tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
+                ImageData id = new ImageData(rgb[index], kernelSize, angles[index]);
 
-            // Set channel color as background and black as foreground
-            this.backgroundColor = bgColor;
-            this.foregroundColor = Color.BLACK;
-
-            // Apply halftone to the current channel and store
-            halftones[index] = measure("Applying pattern: " + channel, () -> applyHalftone(rgb[index], id));
+                // Apply halftone to the current channel and store
+                return applyHalftone(rgb[index], id, colors[index], this.foregroundColor);
+            }));
         }
 
+        try {
+            List<Future<BufferedImage>> results = executor.invokeAll(tasks);
+
+            for (int i = 0; i < results.size(); i++) {
+                halftones[i] = results.get(i).get();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            
+            Thread.currentThread().interrupt();
+            
+            throw new RuntimeException("RGB processing interrupted", e);
+        } catch (ExecutionException e) {
+            executor.shutdownNow();
+            
+            throw new RuntimeException("Error during RGB channel processing", e.getCause());
+        } finally {
+            executor.shutdown();
+        }
+        
         // Merge all RGB halftone images using screen blend mode
         return measure("Merging RGB images", () -> new ImageMerger().mergeImagesScreen(halftones));
     }
@@ -220,56 +271,50 @@ public class Operations {
 
         // Test averaging colors
         new ImageViewer(TestMethods.applyAvgColorsTest(input, angle, kernelSize, id), filePath, this);
-        
-        // Test dot packing in kernel for stippling
-        if (type == TYPE.Stippling) {
-            new ImageViewer(TestMethods.visualizePackingTest(kernelSize, stipplingDensity), filePath, this);
-        }
     }
-
-    private BufferedImage applyHalftone(BufferedImage image, ImageData id) {
-        // Apply the selected halftone pattern on the image
+    
+    // Thread safe version
+    private BufferedImage applyHalftone(BufferedImage image, ImageData id, Color bg, Color fg) {
         switch (type) {
             case Dots -> {
                 Ht_Dot dotGen = new Ht_Dot();
-                dotGen.backgroundColor = backgroundColor;
-                dotGen.foregroundColor = foregroundColor;
+                dotGen.backgroundColor = bg;
+                dotGen.foregroundColor = fg;
                 
                 return dotGen.applyDotPattern(image, kernelSize, id);
             }
             case AlternatingTriangles -> {
                 Ht_Dot dotGen = new Ht_Dot();
-                dotGen.backgroundColor = backgroundColor;
-                dotGen.foregroundColor = foregroundColor;
+                dotGen.backgroundColor = bg;
+                dotGen.foregroundColor = fg;
                 
                 return dotGen.applyAlternatingTrianglePattern(image, kernelSize, id);
             }
             case Polygons -> {
                 Ht_Dot dotGen = new Ht_Dot();
-                dotGen.backgroundColor = backgroundColor;
-                dotGen.foregroundColor = foregroundColor;
+                dotGen.backgroundColor = bg;
+                dotGen.foregroundColor = fg;
                 
                 return dotGen.applyPolygonPattern(image, kernelSize, id, polySides);
             }
             case Stippling -> {
                 Ht_Dot dotGen = new Ht_Dot();
-                dotGen.backgroundColor = backgroundColor;
-                dotGen.foregroundColor = foregroundColor;
+                dotGen.backgroundColor = bg;
+                dotGen.foregroundColor = fg;
                 
-                //return dotGen.applyGridStipplingTestPattern(image, kernelSize, id, stipplingDensity, false);
                 return dotGen.applyStipplingPattern(image, kernelSize, id, stipplingDensity);
             }
             case Lines -> {
                 Ht_Line lineGen = new Ht_Line();
-                lineGen.backgroundColor = backgroundColor;
-                lineGen.foregroundColor = foregroundColor;
+                lineGen.backgroundColor = bg;
+                lineGen.foregroundColor = fg;
                 
                 return lineGen.applyLinePattern(image, kernelSize, id);
             }
             default -> {
                 Ht_Line sineGen = new Ht_Line();
-                sineGen.backgroundColor = backgroundColor;
-                sineGen.foregroundColor = foregroundColor;
+                sineGen.backgroundColor = bg;
+                sineGen.foregroundColor = fg;
                 
                 return sineGen.applySinePattern(image, kernelSize, id);
             }

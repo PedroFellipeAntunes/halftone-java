@@ -3,7 +3,7 @@ package Halftone;
 import Data.ColorAccumulator;
 import Data.ImageData;
 import Data.KernelStipplingContext;
-import Halftone.Util.StipplingHelper;
+import Halftone.Util.StipplingHelperLUTStatic;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -302,8 +302,9 @@ public class Ht_Dot {
 
         int numKernels = data.avgGrid.length;
         int numSegments = data.avgGrid[0].length;
-
-        double diameter = new StipplingHelper().diameterForMaxPoints(kernelSize, density);
+        
+        StipplingHelperLUTStatic helperLUT = new StipplingHelperLUTStatic();
+        double radius = helperLUT.getRadius(kernelSize, density);
         
         for (int kr = 0; kr < numKernels; kr++) {
             for (int kc = 0; kc < numSegments; kc++) {
@@ -324,7 +325,7 @@ public class Ht_Dot {
                 double leftXr = minXr + kc * kernelSize;
                 double topYr = minYr + kr * kernelSize;
 
-                KernelStipplingContext ctx = new KernelStipplingContext(acc, kr, kc, pointsInKernel, leftXr, topYr, kernelSize, diameter, data.rotation);
+                KernelStipplingContext ctx = new KernelStipplingContext(acc, kr, kc, pointsInKernel, leftXr, topYr, kernelSize, radius, data.rotation);
 
                 drawStipplingPointsInKernel(g2d, ctx);
             }

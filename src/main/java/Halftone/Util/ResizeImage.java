@@ -18,6 +18,10 @@ public class ResizeImage {
      * @return A new BufferedImage with borders expanded by kernelSize.
      */
     public BufferedImage expandBorder(BufferedImage input, int kernelSize) {
+        if (kernelSize < 1) {
+            throw new Error("kernelSize must be greater than or equal to 1");
+        }
+        
         int width = input.getWidth();
         int height = input.getHeight();
         int newWidth = width + 2 * kernelSize;
@@ -91,6 +95,10 @@ public class ResizeImage {
      * input dimensions.
      */
     public BufferedImage cropBorder(BufferedImage input, int kernelSize) {
+        if (kernelSize < 1) {
+            throw new Error("kernelSize must be greater than or equal to 1");
+        }
+        
         int width = input.getWidth();
         int height = input.getHeight();
         int newWidth = width - 2 * kernelSize;

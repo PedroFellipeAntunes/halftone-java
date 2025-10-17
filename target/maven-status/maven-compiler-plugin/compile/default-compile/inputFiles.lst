@@ -16,7 +16,7 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ImageMerger.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ResizeImage.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/StipplingDensityTester.java
-/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/StipplingHelper.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/StipplingHelperLUTStatic.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/TestMethods.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Main.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Timing.java

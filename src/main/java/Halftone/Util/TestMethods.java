@@ -1,6 +1,5 @@
 package Halftone.Util;
 
-import Data.HexPackingResult;
 import Data.ImageData;
 
 import java.awt.Color;
@@ -133,75 +132,5 @@ public class TestMethods {
         }
 
         return outputImg;
-    }
-    
-    /**
-     * Generates a kernelSize x kernelSize image that visualizes a hexagonal
-     * (staggered) packing for maxPoints dots.
-     *
-     * The output image has a white background and black filled circles
-     * representing the packing. A translucent border is drawn for reference.
-     *
-     * @param kernelSize side length (px) of the output image.
-     * @param maxPoints maximum number of points to pack.
-     * @return BufferedImage (ARGB) sized kernelSize x kernelSize showing the
-     * hex packing.
-     */
-    public static BufferedImage visualizePackingTest(int kernelSize, int maxPoints) {
-        BufferedImage out = new BufferedImage(kernelSize, kernelSize, BufferedImage.TYPE_INT_ARGB);
-        java.awt.Graphics2D g = out.createGraphics();
-        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // white background
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, kernelSize, kernelSize);
-        g.setColor(Color.BLACK);
-
-        if (kernelSize <= 0 || maxPoints <= 0) {
-            g.dispose();
-            
-            return out;
-        }
-
-        // HEXAGONAL PACKING
-        HexPackingResult res = new StipplingHelper().diameterHexBest(kernelSize, maxPoints);
-
-        double d = Math.min(res.diameter, kernelSize);
-        int rows = res.rows;
-        int cols = res.cols;
-
-        double verticalSpacing = d * Math.sqrt(3.0) / 2.0;
-
-        // center vertically
-        double totalVertSpan = (rows - 1) * verticalSpacing;
-        double startY = (kernelSize - totalVertSpan) / 2.0;
-
-        int drawn = 0;
-        
-        for (int r = 0; r < rows && drawn < maxPoints; r++) {
-            int colsInRow = (r % 2 == 0) ? cols : (cols - 1);
-            
-            if (colsInRow <= 0) {
-                continue;
-            }
-
-            double totalHorSpan = (colsInRow - 1) * d;
-            double startX = (kernelSize - totalHorSpan) / 2.0;
-            double cy = startY + r * verticalSpacing;
-
-            for (int c = 0; c < colsInRow && drawn < maxPoints; c++) {
-                double cx = startX + c * d;
-                double drawX = cx - d * 0.5;
-                double drawY = cy - d * 0.5;
-                
-                g.fill(new java.awt.geom.Ellipse2D.Double(drawX, drawY, d, d));
-                
-                drawn++;
-            }
-        }
-
-        g.dispose();
-        
-        return out;
     }
 }

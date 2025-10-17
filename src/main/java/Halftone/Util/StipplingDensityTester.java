@@ -26,11 +26,10 @@ import java.util.concurrent.TimeUnit;
  * and the average reference.
  * 5. Writing all results to a semicolon-separated log file.
  *
- * Input: - A PNG grayscale gradient test image.
+ * Input: A PNG grayscale gradient test image.
  *
- * Output: - A text file "log.txt" containing: kernelSize;density;delta
+ * Output: A text file "log.txt" containing: kernelSize;density;delta
  */
-
 public class StipplingDensityTester {
     private static final String INPUT_PATH = "gradient_test.png";
     private static final double ANGLE = 0.0;
@@ -39,7 +38,7 @@ public class StipplingDensityTester {
     private static final int KERNEL_MAX = 100;
     private static final int KERNEL_STEP = 1;
 
-    private static final int DENSITY_MIN = 0;
+    private static final int DENSITY_MIN = 1;
     private static final int DENSITY_MAX = 100;
 
     private static final int GC_DENSITY_INTERVAL = 10;

@@ -20,7 +20,7 @@ public class KernelStipplingContext {
     public final long MASK53;
     public final double INV_2POW53;
 
-    public KernelStipplingContext(ColorAccumulator acc, int kernelRow, int kernelCol, int pointsInKernel, double leftXr, double topYr, int kernelSize, double diameter, AffineTransform rotation) {
+    public KernelStipplingContext(ColorAccumulator acc, int kernelRow, int kernelCol, int pointsInKernel, double leftXr, double topYr, int kernelSize, double radius, AffineTransform rotation) {
         this.acc = acc;
         this.kernelRow = kernelRow;
         this.kernelCol = kernelCol;
@@ -28,8 +28,8 @@ public class KernelStipplingContext {
         this.leftXr = leftXr;
         this.topYr = topYr;
         this.kernelSize = kernelSize;
-        this.diameter = diameter;
-        this.radius = diameter / 2;
+        this.radius = radius;
+        this.diameter = radius * 2;
         this.rotation = rotation;
 
         // Initialize RNG

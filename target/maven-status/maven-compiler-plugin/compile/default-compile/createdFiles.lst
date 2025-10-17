@@ -29,7 +29,7 @@ Data/ConfigData.class
 Data/ColorAccumulator.class
 Data/ImageData.class
 Windows/DropDownWindow$1.class
-Halftone/Util/StipplingHelper.class
+Halftone/Util/StipplingHelperLUTStatic.class
 Windows/DropDownWindow$3.class
 FileManager/PngSaver.class
 FileManager/PngConverter.class

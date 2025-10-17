@@ -9,6 +9,27 @@ public class ImageData {
     public AffineTransform rotation;
     public double[] bounds;
     
+    /**
+     * Constructs an ImageData object that precomputes geometric and color
+     * information from the given input image for halftone or stippling
+     * operations.
+     *
+     * This method performs the following steps:
+     * 1. Validates input parameters (image, kernel size, and rotation angle).
+     * 2. Builds a rotation transform centered on the image using the given angle.
+     * 3. Calculates the bounding box of the rotated image.
+     * 4. Divides the rotated image into a grid of square kernels with the given size.
+     * 5. Computes and stores the color accumulation and average color for each kernel region.
+     *
+     * The resulting structure allows later algorithms to map pixels to their
+     * corresponding kernel and quickly access precomputed color statistics,
+     * improving efficiency for visualization and halftoning.
+     *
+     * @param input The source image to analyze.
+     * @param kernelSize Size (in pixels) of each square kernel.
+     * @param angle Rotation angle in degrees (0–360) used to orient the kernel
+     * grid.
+     */
     public ImageData(BufferedImage input, int kernelSize, double angle) {
         // Prepare rotation transform
         double theta = Math.toRadians(angle);
@@ -22,11 +43,5 @@ public class ImageData {
         
         // Compute color accumulators per kernel
         avgGrid = dataFetcher.computeColorAccumulators(input, angle, kernelSize, bounds, rotation);
-    }
-
-    public ImageData(ColorAccumulator[][] avgGrid, AffineTransform rotation, double[] bounds) {
-        this.avgGrid = avgGrid;
-        this.rotation = rotation;
-        this.bounds = bounds;
     }
 }

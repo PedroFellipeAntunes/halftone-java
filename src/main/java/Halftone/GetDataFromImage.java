@@ -62,13 +62,7 @@ public class GetDataFromImage {
      * coordinates.
      * @return 2D array of ColorAccumulators.
      */
-    public ColorAccumulator[][] computeColorAccumulators(
-            BufferedImage image,
-            double angleDegrees,
-            int kernelSize,
-            double[] bounds,
-            AffineTransform rotation
-    ) {
+    public ColorAccumulator[][] computeColorAccumulators(BufferedImage image, double angleDegrees, int kernelSize, double[] bounds, AffineTransform rotation) {
         int width = image.getWidth();
         int height = image.getHeight();
 
