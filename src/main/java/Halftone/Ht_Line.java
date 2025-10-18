@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Ht_Line {
-    public int lineSpacing = 0;
+    private final int lineSpacing = 0; // Currently unused
+    private final double lineThicknessMIN = 1.0 / 32.0; // Small enough to allow lines to propagate but not to exist in bright areas
     
     public Color backgroundColor = Color.WHITE;
     public Color foregroundColor = Color.BLACK;
@@ -235,7 +236,7 @@ public class Ht_Line {
     private double computeBaseHalfThickness(double gray, int kernelSize) {
         double thick = ((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0));
         
-        return (thick > 0.25) ? thick : 0; // Prevent lines smaller than a pixel
+        return (thick > lineThicknessMIN) ? thick : 0; // Prevent lines smaller than a pixel
     }
 
     private boolean rowHasData(ImageData data, int row) {
@@ -258,14 +259,7 @@ public class Ht_Line {
      * - If only one is valid, return that kernel’s gray and alpha.
      * - If neither is valid, return gray = -1 to signal “no data.”
      */
-    private InterpolatedResult interpolatedGrayAndAlpha(
-            ImageData data,
-            int row,
-            int kernelSize,
-            double minXr,
-            double x,
-            int numCols
-    ) {
+    private InterpolatedResult interpolatedGrayAndAlpha(ImageData data, int row, int kernelSize, double minXr, double x, int numCols) {
         double exact = (x - minXr) / kernelSize;
         int left = (int) Math.floor(exact);
         int right = left + 1;
