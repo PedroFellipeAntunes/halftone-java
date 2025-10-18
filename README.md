@@ -46,7 +46,7 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
 ## Features
 
 - **Apply Halftone Effect**  
-  - Patterns: `Dots`, `Squares`, `Triangles`, `Lines`, `Sine Waves`.
+  - Patterns: `Dots`, `Polygons`, `Triangles`, `Stippling`, `Lines`, `Sine Waves`.
 - **Full CMYK/RGB Processing**  
   - Separates image into CMYK/RGB channels, applies halftone at predetermined angles, and merges using multiply/screen blend.
 - **Drag & Drop Support**  
