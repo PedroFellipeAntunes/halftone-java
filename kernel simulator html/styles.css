@@ -1,24 +1,18 @@
 :root {
-  /* Colors */
   --bg: #000;
   --fg: #fff;
   --muted: #e2e2e2;
   --accent: #0b7bdc;
   --border: #fff;
-  --green: #00c853;
-  --danger: #ff1744;
 
-  /* Layout spacing */
   --page-padding: 1rem;
   --panel-padding: 1rem;
   --panel-gap: 1rem;
   --canvas-gap: 1.5rem;
 
-  /* Border and radius */
   --border-width: 1px;
   --border-radius: 0.3rem;
 
-  /* Font */
   --font-family: "Courier New", Courier, monospace;
   --font-size-base: 1rem;
   --font-size-small: 0.9rem;
@@ -26,16 +20,13 @@
   --font-size-label: 0.95rem;
 }
 
-/* Reset */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* html / body */
-html,
-body {
+html, body {
   height: 100%;
   width: 100%;
   background: var(--bg);
@@ -45,7 +36,6 @@ body {
   overflow: hidden;
 }
 
-/* page container */
 .page {
   height: 100%;
   width: 100%;
@@ -55,7 +45,6 @@ body {
   padding: var(--page-padding);
 }
 
-/* panel */
 .panel {
   width: 100%;
   height: 100%;
@@ -68,11 +57,32 @@ body {
   min-width: 0;
 }
 
-/* Header / controls */
-h1 {
-  font-size: var(--font-size-heading);
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.header-controls h1 {
+  margin: 0;
   white-space: nowrap;
+}
+
+#loadImageBtn {
+  background: transparent;
+  color: var(--fg);
+  border: 1.5px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+}
+
+#loadImageBtn:hover {
+  background: var(--fg);
+  color: var(--bg);
 }
 
 #controls {
@@ -125,19 +135,11 @@ input[type="number"] {
   text-align: right;
 }
 
-input[type="checkbox"] {
-  width: 1.2rem;
-  height: 1.2rem;
-  cursor: pointer;
-  margin-right: 0.4rem;
-}
-
-/* canvas-wrap (container for canvas boxes) */
 .canvas-wrap {
   flex-grow: 1;
   display: flex;
   justify-content: center;
-  align-items: stretch; /* allow children to stretch vertically */
+  align-items: stretch;
   gap: var(--canvas-gap);
   padding: 1rem 0;
   overflow: hidden;
@@ -145,12 +147,11 @@ input[type="checkbox"] {
   min-width: 0;
 }
 
-/* canvas-box (each canvas column) */
 .canvas-box {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  align-items: stretch; /* allow canvas to stretch full width */
+  align-items: stretch;
   width: 48%;
   height: 100%;
   box-sizing: border-box;
@@ -159,13 +160,11 @@ input[type="checkbox"] {
   overflow: hidden;
 }
 
-/* canvas label */
 .canvas-label {
   font-size: var(--font-size-label);
   color: var(--muted);
 }
 
-/* canvas element */
 .canvas {
   box-sizing: border-box;
   width: 100%;
@@ -179,18 +178,6 @@ input[type="checkbox"] {
   overflow: hidden;
 }
 
-/* explicit ids for canvases */
-#leftCanvas,
-#rightCanvas {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-  box-sizing: border-box;
-}
-
-/* Info / stats */
 .info {
   padding-top: 0.5rem;
   color: var(--muted);
