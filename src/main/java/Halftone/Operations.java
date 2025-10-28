@@ -69,7 +69,7 @@ public class Operations {
         );
         
         // Optional test
-//        testMethods(expanded, kernelSize, angle, filePath);
+//        testMethods(expanded, filePath);
 
         // 3) Apply the selected processing pipeline (Default, CMYK, RGB)
         final BufferedImage halftoned = switch (config.opType) {
@@ -117,7 +117,7 @@ public class Operations {
             case RGB ->
                 prefix = String.format("Halftone[%s;%d;RGB]", formatTypeName(), config.scale);
             default ->
-                prefix = String.format("Halftone[%s;%d;%.1f]", formatTypeName(), config.scale, config.angle);
+                prefix = String.format("Halftone[%s;%d;%.1f]", formatTypeName(), config.scale, (double) config.angle);
         }
 
         saver.saveToFile(prefix, filePath, image);
@@ -134,7 +134,9 @@ public class Operations {
 
     private BufferedImage process(BufferedImage expanded) {
         // Create ImageData object with kernel info and rotation
-        ImageData id = new ImageData(expanded, config.scale, config.angle);
+        ImageData id = measure("Calculating Image Data", () ->
+            new ImageData(expanded, config.scale, config.angle)
+        );
 
         // Apply the selected halftone pattern and return processed image
         return measure("Halftone pattern: " + config.type, () -> applyHalftone(expanded, id, config.colors[0], config.colors[1]));
@@ -165,7 +167,9 @@ public class Operations {
             final int index = i;
 
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
-                ImageData id = new ImageData(cmyk[index], config.scale, angles[index]);
+                ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
+                    new ImageData(cmyk[index], config.scale, angles[index])
+                );
                 
                 // Apply halftone to the current channel and store
                 return applyHalftone(cmyk[index], id, config.colors[0], colors[index]);
@@ -221,7 +225,9 @@ public class Operations {
             final int index = i;
 
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
-                ImageData id = new ImageData(rgb[index], config.scale, angles[index]);
+                ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
+                    new ImageData(rgb[index], config.scale, angles[index])
+                );
 
                 // Apply halftone to the current channel and store
                 return applyHalftone(rgb[index], id, colors[index], config.colors[1]);
@@ -252,14 +258,14 @@ public class Operations {
         return measure("Merging RGB images", () -> new ImageMerger().mergeImagesScreen(halftones));
     }
 
-    private void testMethods(BufferedImage input, int kernelSize, double angle, String filePath) {
-        ImageData id = new ImageData(input, kernelSize, angle);
+    private void testMethods(BufferedImage input, String filePath) {
+        ImageData id = new ImageData(input, config.scale, config.angle);
 
         // Test kernel application
-        new ImageViewer(TestMethods.applyKernelTest(input, kernelSize, id), filePath, this);
+        new ImageViewer(TestMethods.applyKernelTest(input, config.scale, id), filePath, this);
 
         // Test averaging colors
-        new ImageViewer(TestMethods.applyAvgColorsTest(input, angle, kernelSize, id), filePath, this);
+        new ImageViewer(TestMethods.applyAvgColorsTest(input, config.angle, config.scale, id), filePath, this);
     }
     
     // Thread safe version
