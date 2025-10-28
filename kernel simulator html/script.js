@@ -1,243 +1,319 @@
-// Immediately-invoked function to keep scope local
 (() => {
-  // DOM references
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
+  // ---------- DOM References ----------
+  const leftCanvas = document.getElementById('leftCanvas');
+  const rightCanvas = document.getElementById('rightCanvas');
+  const leftCtx = leftCanvas.getContext('2d');
+  const rightCtx = rightCanvas.getContext('2d');
 
   const angleInput = document.getElementById('angle');
   const angleVal = document.getElementById('angleVal');
   const kernelInput = document.getElementById('kernel');
   const kVal = document.getElementById('kVal');
-  const expanded = document.getElementById('expanded');
-  const drawFullGridInput = document.getElementById('drawFullGrid');
   const rectWInput = document.getElementById('rectW');
   const rectHInput = document.getElementById('rectH');
   const stats = document.getElementById('stats');
+  const hoverInfo = document.getElementById('hoverInfo');
 
-  // Canvas aspect ratio used to scale drawing region
-  const ASPECT_RATIO = 820 / 520;
+  // ---------- Visual Config Variables ----------
+  const COLORS = {
+    canvasBg: 'black', // Background color of canvases
+    rectFill: 'rgba(30,144,255,0.95)', // Blue filled rectangle
+    rectBorder: 'rgba(10,60,140,0.95)', // Expanded rectangle border
+    rotatedBorder: 'white', // Rotated corners border
+    centerDot: 'white', // Center dot color
+    mouseStart: 'rgba(0,255,0,0.95)', // Original mouse point
+    mouseEnd: 'rgba(255,0,0,0.95)', // Rotated mouse point
+    arrow: 'blue', // Arrow color from green->red
+    rightOccupied: 'rgba(32,255,64,0.95)', // Right canvas occupied cell
+    rightEmpty: 'rgba(255,32,64,0.90)', // Right canvas empty cell
+    rightHover: 'rgba(33,150,243,0.95)', // Hovered cell
+    rightBorder: 'rgba(0,255,0,0.9)', // Border around rotated grid
+    hoverStroke: 'white' // Stroke for hover cell
+  };
 
-  // Convert degrees to radians
-  function degToRad(d){ return d * Math.PI / 180; }
+  const LINE_WIDTHS = {
+    rectBorder: 5,
+    rotatedBorder: 2,
+    centerDot: 2,
+    arrow: 3,
+    rightCell: 0.25,
+    rightHover: 2
+  };
 
-  // Rotate a point (x,y) around center (cx,cy) by theta radians
+  const DOT = {
+    leftMultiplier: 2,
+    leftMinPx: 2,
+    centerMultiplier: 1.5,
+    rightInsetFraction: 0
+  };
+
+  const ARROW = {
+    headFactor: 5
+  };
+
+  const PADDING = 12;
+
+  // ---------- Utility Functions ----------
+  const toRad = d => d * Math.PI / 180;
   function rotatePoint(x, y, cx, cy, theta) {
-    const dx = x - cx;
-    const dy = y - cy;
-    const cos = Math.cos(theta), sin = Math.sin(theta);
-    const rx = dx * cos - dy * sin;
-    const ry = dx * sin + dy * cos;
-    return { x: cx + rx, y: cy + ry };
+    const dx = x - cx, dy = y - cy;
+    const c = Math.cos(theta), s = Math.sin(theta);
+    return { x: cx + (dx * c - dy * s), y: cy + (dx * s + dy * c) };
   }
 
-  // Inverse rotate (rotate by negative angle)
-  function inverseRotatePoint(x, y, cx, cy, theta) {
-    return rotatePoint(x, y, cx, cy, -theta);
-  }
+  // ---------- State Variables ----------
+  let occupancy = [], counts = [];
+  let gridMeta = null, leftMeta = null;
+  let hoverCell = null, mouseImage = null, rotatedMouse = null;
 
-  // Resize canvas to fit the canvas-wrap while preserving aspect ratio,
-  // and trigger a redraw at the new resolution.
-  function resizeCanvas() {
+  // ---------- Canvas Resize ----------
+  function resizeCanvases() {
     const wrap = document.querySelector('.canvas-wrap');
-    const maxWidth = wrap.clientWidth;
-    const maxHeight = wrap.clientHeight;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    const gap = 16;
 
-    let newWidth = maxWidth;
-    let newHeight = newWidth / ASPECT_RATIO;
+    const boxWidth = Math.floor((w - gap) / 2);
+    const boxHeight = Math.floor(h - 24);
 
-    if (newHeight > maxHeight) {
-      newHeight = maxHeight;
-      newWidth = newHeight * ASPECT_RATIO;
-    }
+    leftCanvas.width = boxWidth;
+    leftCanvas.height = boxHeight;
+    leftCanvas.style.width = boxWidth + 'px';
+    leftCanvas.style.height = boxHeight + 'px';
 
-    canvas.width = Math.floor(newWidth);
-    canvas.height = Math.floor(newHeight);
-
-    canvas.style.width = `${newWidth}px`;
-    canvas.style.height = `${newHeight}px`;
+    rightCanvas.width = boxWidth;
+    rightCanvas.height = boxHeight;
+    rightCanvas.style.width = boxWidth + 'px';
+    rightCanvas.style.height = boxHeight + 'px';
 
     draw();
   }
 
-  // Draw the rotated grid, sampled cells and stats
+  // ---------- Main Draw Function ----------
   function draw() {
+    // Read inputs
     const angleDeg = Number(angleInput.value);
-    const theta = degToRad(angleDeg);
+    const theta = toRad(angleDeg);
     angleVal.textContent = angleDeg;
 
-    const kernel = Number(kernelInput.value);
+    const kernel = Math.max(1, Math.floor(Number(kernelInput.value) || 15));
     kVal.textContent = kernel;
 
-    const rectW = Math.max(1, Math.floor(Number(rectWInput.value) || 0));
-    const rectH = Math.max(1, Math.floor(Number(rectHInput.value) || 0));
-    const border = expanded.checked ? kernel : 0;
-    const drawFullGrid = drawFullGridInput.checked;
+    const rectW = Math.max(1, Math.floor(Number(rectWInput.value) || 200));
+    const rectH = Math.max(1, Math.floor(Number(rectHInput.value) || 200));
 
+    const border = kernel;
     const imgW = rectW + 2 * border;
     const imgH = rectH + 2 * border;
+    const centerX = border + rectW / 2;
+    const centerY = border + rectH / 2;
 
-    const canvasW = canvas.width;
-    const canvasH = canvas.height;
-
-    // Center the drawing inside the canvas
-    const originX = Math.max(0, Math.round((canvasW - imgW) / 2));
-    const originY = Math.max(0, Math.round((canvasH - imgH) / 2));
-
-    const centerX = imgW / 2;
-    const centerY = imgH / 2;
-
-    ctx.clearRect(0, 0, canvasW, canvasH);
-
-    ctx.save();
-    ctx.translate(originX, originY);
-
-    // Outline the expanded rectangle (with border)
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0, 0, imgW, imgH);
-
-    // Original blue rectangle inside border
-    ctx.fillStyle = '#0000ff80';
-    ctx.fillRect(border, border, rectW, rectH);
-
-    // Compute rotated bounding box of the expanded rectangle
-    const corners = [
-      {x: 0, y: 0},
-      {x: imgW, y: 0},
-      {x: 0, y: imgH},
-      {x: imgW, y: imgH}
+    // Compute rotated corners
+    const cornersExpanded = [
+      { x: 0, y: 0 },
+      { x: imgW, y: 0 },
+      { x: imgW, y: imgH },
+      { x: 0, y: imgH }
     ];
+    const rotatedCorners = cornersExpanded.map(p => rotatePoint(p.x, p.y, centerX, centerY, theta));
+    const xrVals = rotatedCorners.map(p => p.x), yrVals = rotatedCorners.map(p => p.y);
 
-    const rotatedCorners = corners.map(p => rotatePoint(p.x, p.y, centerX, centerY, theta));
-    const xrVals = rotatedCorners.map(p => p.x);
-    const yrVals = rotatedCorners.map(p => p.y);
-    const minXr = Math.min(...xrVals);
-    const maxXr = Math.max(...xrVals);
-    const minYr = Math.min(...yrVals);
-    const maxYr = Math.max(...yrVals);
+    const minXr = Math.min(...xrVals), maxXr = Math.max(...xrVals);
+    const minYr = Math.min(...yrVals), maxYr = Math.max(...yrVals);
 
-    const Wb = maxXr - minXr;
-    const Hb = maxYr - minYr;
-
+    const Wb = maxXr - minXr, Hb = maxYr - minYr;
     const numCols = Math.max(1, Math.ceil(Wb / kernel));
     const numRows = Math.max(1, Math.ceil(Hb / kernel));
 
-    // Allocate occupancy and counts arrays
-    const occupancy = new Array(numRows);
-    const counts = new Array(numRows);
-    for (let r = 0; r < numRows; r++) {
-      occupancy[r] = new Array(numCols).fill(false);
-      counts[r] = new Array(numCols).fill(0);
-    }
+    occupancy = Array.from({length: numRows}, () => Array(numCols).fill(false));
+    counts = Array.from({length: numRows}, () => Array(numCols).fill(0));
 
-    // Sample each pixel of the original (expanded) rect and mark occupancy
-    let sampled = 0;
-    for (let yy = border; yy < border + rectH; yy++) {
-      for (let xx = border; xx < border + rectW; xx++) {
-        const rp = rotatePoint(xx, yy, centerX, centerY, theta);
-        const xr = rp.x, yr = rp.y;
-        const col = Math.floor((xr - minXr) / kernel);
-        const row = Math.floor((yr - minYr) / kernel);
+    for (let y = 0; y < imgH; y++) {
+      for (let x = 0; x < imgW; x++) {
+        const rp = rotatePoint(x, y, centerX, centerY, theta);
+        const col = Math.floor((rp.x - minXr) / kernel);
+        const row = Math.floor((rp.y - minYr) / kernel);
         if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
           occupancy[row][col] = true;
-          counts[row][col] += 1;
-        }
-        sampled++;
-      }
-    }
-
-    // Draw grid cells: optionally full grid (red) and occupied cells (white)
-    ctx.lineWidth = 1;
-    for (let r = 0; r < numRows; r++) {
-      for (let c = 0; c < numCols; c++) {
-        const x0 = minXr + c * kernel;
-        const x1 = minXr + (c + 1) * kernel;
-        const y0 = minYr + r * kernel;
-        const y1 = minYr + (r + 1) * kernel;
-
-        const rc0 = inverseRotatePoint(x0, y0, centerX, centerY, theta);
-        const rc1 = inverseRotatePoint(x1, y0, centerX, centerY, theta);
-        const rc2 = inverseRotatePoint(x1, y1, centerX, centerY, theta);
-        const rc3 = inverseRotatePoint(x0, y1, centerX, centerY, theta);
-
-        if (drawFullGrid) {
-          ctx.beginPath();
-          ctx.moveTo(rc0.x, rc0.y);
-          ctx.lineTo(rc1.x, rc1.y);
-          ctx.lineTo(rc2.x, rc2.y);
-          ctx.lineTo(rc3.x, rc3.y);
-          ctx.closePath();
-          ctx.strokeStyle = 'rgba(255,0,0,1)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-
-        if (occupancy[r][c]) {
-          ctx.beginPath();
-          ctx.moveTo(rc0.x, rc0.y);
-          ctx.lineTo(rc1.x, rc1.y);
-          ctx.lineTo(rc2.x, rc2.y);
-          ctx.lineTo(rc3.x, rc3.y);
-          ctx.closePath();
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = 'rgba(255,255,255,1)';
-          ctx.stroke();
+          counts[row][col]++;
         }
       }
     }
 
-    // Draw rotated bounding box (dashed green)
-    const bb0 = inverseRotatePoint(minXr, minYr, centerX, centerY, theta);
-    const bb1 = inverseRotatePoint(maxXr, minYr, centerX, centerY, theta);
-    const bb2 = inverseRotatePoint(maxXr, maxYr, centerX, centerY, theta);
-    const bb3 = inverseRotatePoint(minXr, maxYr, centerX, centerY, theta);
+    gridMeta = { kernel, rectW, rectH, border, imgW, imgH, centerX, centerY, minXr, minYr, Wb, Hb, numCols, numRows, theta, rotatedCorners };
 
-    ctx.beginPath();
-    ctx.moveTo(bb0.x, bb0.y);
-    ctx.lineTo(bb1.x, bb1.y);
-    ctx.lineTo(bb2.x, bb2.y);
-    ctx.lineTo(bb3.x, bb3.y);
-    ctx.closePath();
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6,4]);
-    ctx.strokeStyle = '#00ff00';
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // ---------- LEFT CANVAS ----------
+    leftCtx.clearRect(0, 0, leftCanvas.width, leftCanvas.height);
+    leftCtx.fillStyle = COLORS.canvasBg;
+    leftCtx.fillRect(0, 0, leftCanvas.width, leftCanvas.height);
 
-    // Draw center point marker
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 3, 0, Math.PI*2);
-    ctx.fill();
+    const scaleL = Math.max(0.0001, Math.min((leftCanvas.width - 2*PADDING)/imgW, (leftCanvas.height - 2*PADDING)/imgH));
+    const leftOffsetX = PADDING + (leftCanvas.width - 2*PADDING - imgW*scaleL)/2;
+    const leftOffsetY = PADDING + (leftCanvas.height - 2*PADDING - imgH*scaleL)/2;
+    leftMeta = { scaleL, leftOffsetX, leftOffsetY, imgW, imgH, border, centerX, centerY, theta };
 
-    ctx.restore();
+    leftCtx.fillStyle = COLORS.rectFill;
+    leftCtx.fillRect(Math.round(leftOffsetX + border*scaleL),
+                     Math.round(leftOffsetY + border*scaleL),
+                     Math.max(1, Math.round(rectW*scaleL)),
+                     Math.max(1, Math.round(rectH*scaleL)));
 
-    // Compute stats and display them
-    const totalCells = numCols * numRows;
-    let occupiedCount = 0;
-    let totalSamples = 0;
-    for (let r=0;r<numRows;r++){
-      for (let c=0;c<numCols;c++){
-        if (occupancy[r][c]) occupiedCount++;
-        totalSamples += counts[r][c];
+    leftCtx.strokeStyle = COLORS.rectBorder;
+    leftCtx.lineWidth = LINE_WIDTHS.rectBorder;
+    leftCtx.strokeRect(Math.round(leftOffsetX)+0.5, Math.round(leftOffsetY)+0.5,
+                       Math.max(1, Math.round(imgW*scaleL))-1,
+                       Math.max(1, Math.round(imgH*scaleL))-1);
+
+    leftCtx.strokeStyle = COLORS.rotatedBorder;
+    leftCtx.lineWidth = LINE_WIDTHS.rotatedBorder;
+    leftCtx.beginPath();
+    gridMeta.rotatedCorners.forEach((p, idx) => {
+      const cx = p.x*scaleL + leftOffsetX, cy = p.y*scaleL + leftOffsetY;
+      idx===0 ? leftCtx.moveTo(cx, cy) : leftCtx.lineTo(cx, cy);
+    });
+    leftCtx.closePath();
+    leftCtx.stroke();
+
+    leftCtx.fillStyle = COLORS.centerDot;
+    leftCtx.beginPath();
+    leftCtx.arc(centerX*scaleL + leftOffsetX, centerY*scaleL + leftOffsetY,
+                Math.max(DOT.leftMinPx, scaleL*DOT.centerMultiplier),
+                0, Math.PI*2);
+    leftCtx.fill();
+
+    // ---------- Mouse Drawing Left ----------
+    if(mouseImage && leftMeta){
+      const gx = mouseImage.ex*scaleL + leftOffsetX;
+      const gy = mouseImage.ey*scaleL + leftOffsetY;
+      leftCtx.fillStyle = COLORS.mouseStart;
+      leftCtx.beginPath();
+      leftCtx.arc(gx, gy, Math.max(DOT.leftMinPx, Math.ceil(scaleL*DOT.leftMultiplier)), 0, Math.PI*2);
+      leftCtx.fill();
+
+      if(rotatedMouse){
+        const rx = rotatedMouse.x*scaleL + leftOffsetX;
+        const ry = rotatedMouse.y*scaleL + leftOffsetY;
+        leftCtx.fillStyle = COLORS.mouseEnd;
+        leftCtx.beginPath();
+        leftCtx.arc(rx, ry, Math.max(DOT.leftMinPx, Math.ceil(scaleL*DOT.leftMultiplier)), 0, Math.PI*2);
+        leftCtx.fill();
+
+        leftCtx.strokeStyle = COLORS.arrow;
+        leftCtx.lineWidth = LINE_WIDTHS.arrow;
+        leftCtx.beginPath();
+        leftCtx.moveTo(gx, gy);
+        leftCtx.lineTo(rx, ry);
+        leftCtx.stroke();
+
+        const angle = Math.atan2(ry - gy, rx - gx);
+        const headLen = LINE_WIDTHS.arrow * ARROW.headFactor;
+        leftCtx.beginPath();
+        leftCtx.moveTo(rx, ry);
+        leftCtx.lineTo(rx - headLen * Math.cos(angle - Math.PI/6), ry - headLen * Math.sin(angle - Math.PI/6));
+        leftCtx.lineTo(rx - headLen * Math.cos(angle + Math.PI/6), ry - headLen * Math.sin(angle + Math.PI/6));
+        leftCtx.lineTo(rx, ry);
+        leftCtx.fillStyle = COLORS.arrow;
+        leftCtx.fill();
       }
     }
 
-    stats.innerHTML = `Expanded image: ${imgW}×${imgH} px (border=${border}) &nbsp; | &nbsp; Rotated bounding box: ${Wb.toFixed(2)}×${Hb.toFixed(2)} px<br>
-      Grid: ${numRows} rows × ${numCols} cols = ${totalCells} cells &nbsp; | &nbsp; Occupied cells: ${occupiedCount} &nbsp; | &nbsp; Sampled points: ${totalSamples}`;
+    // ---------- RIGHT CANVAS ----------
+    rightCtx.clearRect(0,0,rightCanvas.width,rightCanvas.height);
+    rightCtx.fillStyle = COLORS.canvasBg;
+    rightCtx.fillRect(0,0,rightCanvas.width,rightCanvas.height);
+
+    const scaleR = Math.max(0.0001, Math.min((rightCanvas.width-2*PADDING)/Wb, (rightCanvas.height-2*PADDING)/Hb));
+    const rightOffsetX = PADDING + (rightCanvas.width-2*PADDING-Wb*scaleR)/2 - minXr*scaleR;
+    const rightOffsetY = PADDING + (rightCanvas.height-2*PADDING-Hb*scaleR)/2 - minYr*scaleR;
+
+    for(let r=0;r<numRows;r++){
+      for(let c=0;c<numCols;c++){
+        const x0 = minXr + c*kernel, y0 = minYr + r*kernel;
+        const sx = x0*scaleR + rightOffsetX, sy = y0*scaleR + rightOffsetY;
+        const sw = kernel*scaleR, sh = kernel*scaleR;
+        const inset = Math.max(0, Math.floor(Math.min(sw,sh)*DOT.rightInsetFraction));
+        rightCtx.fillStyle = occupancy[r][c] ? COLORS.rightOccupied : COLORS.rightEmpty;
+        rightCtx.fillRect(Math.round(sx)+inset, Math.round(sy)+inset, Math.max(1,Math.ceil(sw)-2*inset), Math.max(1,Math.ceil(sh)-2*inset));
+        rightCtx.strokeStyle = COLORS.hoverStroke;
+        rightCtx.lineWidth = LINE_WIDTHS.rightCell;
+        rightCtx.strokeRect(Math.round(sx)+0.5, Math.round(sy)+0.5, Math.ceil(sw)-1, Math.ceil(sh)-1);
+      }
+    }
+
+    if(hoverCell){
+      const r = hoverCell.r, c = hoverCell.c;
+      if(r>=0 && r<numRows && c>=0 && c<numCols){
+        const x0 = minXr + c*kernel, y0 = minYr + r*kernel;
+        const sx = x0*scaleR + rightOffsetX, sy = y0*scaleR + rightOffsetY;
+        const sw = kernel*scaleR, sh = kernel*scaleR;
+        rightCtx.fillStyle = COLORS.rightHover;
+        rightCtx.fillRect(Math.round(sx), Math.round(sy), Math.ceil(sw), Math.ceil(sh));
+        rightCtx.strokeStyle = COLORS.hoverStroke;
+        rightCtx.lineWidth = LINE_WIDTHS.rightHover;
+        rightCtx.strokeRect(Math.round(sx)+0.5, Math.round(sy)+0.5, Math.ceil(sw)-1, Math.ceil(sh)-1);
+      }
+    }
+
+    rightCtx.setLineDash([6,4]);
+    rightCtx.strokeStyle = COLORS.rightBorder;
+    rightCtx.lineWidth = LINE_WIDTHS.rotatedBorder;
+    rightCtx.strokeRect(Math.round(minXr*scaleR + rightOffsetX), Math.round(minYr*scaleR + rightOffsetY),
+                        Math.round(Wb*scaleR), Math.round(Hb*scaleR));
+    rightCtx.setLineDash([]);
+
+    // ---------- Stats ----------
+    let occupiedCount=0,totalSamples=0;
+    for(let r=0;r<numRows;r++) for(let c=0;c<numCols;c++){
+      if(occupancy[r][c]) occupiedCount++;
+      totalSamples+=counts[r][c];
+    }
+    stats.innerHTML = `Original: ${rectW}×${rectH} px | Border: ${border} | Rotated box: ${Wb.toFixed(2)}×${Hb.toFixed(2)} px
+      &nbsp; | &nbsp; Grid: ${numRows}×${numCols} = ${numRows*numCols} &nbsp; | &nbsp; Occupied: ${occupiedCount} &nbsp; | &nbsp; Samples: ${totalSamples}`;
   }
 
-  // Wire up UI events to redraw when controls change
+  // ---------- Mouse Mapping ----------
+  function leftCanvasClientToImage(clientX, clientY){
+    if(!leftMeta) return null;
+    const rect = leftCanvas.getBoundingClientRect();
+    const cssX = clientX - rect.left, cssY = clientY - rect.top;
+    const scaleX = leftCanvas.width / rect.width, scaleY = leftCanvas.height / rect.height;
+    const cx = cssX*scaleX, cy = cssY*scaleY;
+    const ex = (cx - leftMeta.leftOffsetX)/leftMeta.scaleL;
+    const ey = (cy - leftMeta.leftOffsetY)/leftMeta.scaleL;
+    const ix = ex, iy = ey;
+    return {ix,iy,ex,ey};
+  }
+
+  // ---------- Events ----------
+  leftCanvas.addEventListener('mousemove', evt=>{
+    if(!gridMeta || !leftMeta) return;
+    const pos = leftCanvasClientToImage(evt.clientX,evt.clientY);
+    if(!pos) return;
+    const ex = pos.ex, ey = pos.ey;
+    if(ex>=0 && ex<gridMeta.imgW && ey>=0 && ey<gridMeta.imgH){
+      mouseImage = {ix:pos.ix,iy:pos.iy,ex,ey};
+      const rp = rotatePoint(ex,ey,gridMeta.centerX,gridMeta.centerY,gridMeta.theta);
+      rotatedMouse = {x: rp.x, y: rp.y};
+      hoverCell = { r: Math.floor((rp.y-gridMeta.minYr)/gridMeta.kernel),
+                    c: Math.floor((rp.x-gridMeta.minXr)/gridMeta.kernel) };
+      hoverInfo.textContent = `XY: ${pos.ix.toFixed(2)}, ${pos.iy.toFixed(2)} | Kernel: row=${hoverCell.r}, col=${hoverCell.c}`;
+    }else{
+      mouseImage=null; rotatedMouse=null; hoverCell=null;
+      hoverInfo.textContent='XY: — | Kernel: —';
+    }
+    draw();
+  });
+
+  leftCanvas.addEventListener('mouseleave', ()=>{
+    mouseImage=null; rotatedMouse=null; hoverCell=null;
+    hoverInfo.textContent='XY: — | Kernel: —';
+    draw();
+  });
+
   angleInput.addEventListener('input', draw);
   kernelInput.addEventListener('input', draw);
-  expanded.addEventListener('change', draw);
-  drawFullGridInput.addEventListener('change', draw);
   rectWInput.addEventListener('input', draw);
   rectHInput.addEventListener('input', draw);
+  window.addEventListener('resize', resizeCanvases);
 
-  // Recompute canvas size on window resize
-  window.addEventListener('resize', resizeCanvas);
-
-  // Initialize canvas size and draw for the first time
-  resizeCanvas();
+  resizeCanvases();
 })();

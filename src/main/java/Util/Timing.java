@@ -16,9 +16,9 @@ public class Timing {
      * The method calls System.gc() before measuring to reduce noise from previous
      * memory allocations (same behavior as old implementation).
      *
-     * @param label  textual label used on the printed report
+     * @param label textual label used on the printed report
      * @param action action to execute
-     * @param <T>    action return type
+     * @param <T> action return type
      * @return the action result
      */
     public static <T> T measure(String label, Action<T> action) {

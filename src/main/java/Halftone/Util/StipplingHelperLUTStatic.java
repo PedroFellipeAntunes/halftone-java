@@ -121,9 +121,8 @@ public class StipplingHelperLUTStatic {
      * 0.5 is returned to avoid degenerate values.
      * 
      * The computation steps are:
-     * Validate kernel size (> 0).
-     * Clamp density between 0 and 100.
-     * If density == 0 → radius = 0.5.
+     * Validate kernel size (> 1).
+     * Clamp density between 1 and 100.
      * 
      * Otherwise:
      * fraction = LUT[density - 1]
@@ -140,11 +139,7 @@ public class StipplingHelperLUTStatic {
     public double getRadius(int kernelSize, int density) {
         if (kernelSize <= 0) throw new IllegalArgumentException("kernelSize must be > 0");
         
-        if (density < 0 || density > 100) throw new IllegalArgumentException("density must be 0..100; If you need a bigger value, a new LUT will bave to be generated");
-
-        if (density == 0) {
-            return 0.5;
-        }
+        if (density < 1 || density > 100) throw new IllegalArgumentException("density must be 1..100; If you need a bigger value, a new LUT will bave to be generated");
         
         // Lookup normalized fraction from LUT (1 → full half-diagonal)
         double fraction = LUT[density - 1];
