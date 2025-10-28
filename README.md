@@ -101,7 +101,7 @@ Below is a high-level overview of the halftone algorithm (example based on line/
      <img src="images/steps/Step1.png" width="650" alt="Step 1: Kernel Generation">
    </p>
 
-   Try out my simulation in real time of the kernel calculation by running the `kernel_simulator.html`!
+   To better understand the logic behind the kernels try out my [kernel simulator](https://kernel-simulator.vercel.app/)!
 
 2. **Luminance Calculation**  
    - Within each kernel, convert the average color to luminance.  
