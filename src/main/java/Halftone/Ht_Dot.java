@@ -3,6 +3,7 @@ package Halftone;
 import Data.ColorAccumulator;
 import Data.ImageData;
 import Data.KernelStipplingContext;
+import Halftone.Util.RngHelper;
 import Halftone.Util.StipplingHelperLUTStatic;
 
 import java.awt.Color;
@@ -13,6 +14,7 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 public class Ht_Dot {
     public Color backgroundColor = Color.WHITE;
@@ -340,31 +342,18 @@ public class Ht_Dot {
     
     private void drawStipplingPointsInKernel(Graphics2D g2d, KernelStipplingContext ctx) {
         for (int p = 0; p < ctx.pointsInKernel; p++) {
-            long seed = 0x9E3779B97F4A7C15L
-                    ^ (((long) ctx.kernelRow) << 48)
-                    ^ (((long) ctx.kernelCol) << 32)
-                    ^ (((long) p) << 16)
-                    ^ Double.doubleToLongBits(ctx.leftXr)
-                    ^ (Double.doubleToLongBits(ctx.topYr) << 1)
-                    ^ ((long) (ctx.acc.getAverage().getAlpha() & 0xff) << 8)
-                    ^ ((long) ((int) ctx.acc.getGrayScale()) << 24);
-
-            drawStipplingDot(g2d, ctx, seed);
+            drawStipplingDot(g2d, ctx, RngHelper.getRng());
         }
     }
     
-    private void drawStipplingDot(Graphics2D g2d, KernelStipplingContext ctx, long seed) {
-        long r1 = ctx.splitmix.applyAsLong(seed);
-        long r2 = ctx.splitmix.applyAsLong(r1);
-
-        double u1 = (double) (r1 & ctx.MASK53) * ctx.INV_2POW53;
-        double u2 = (double) (r2 & ctx.MASK53) * ctx.INV_2POW53;
+    private void drawStipplingDot(Graphics2D g2d, KernelStipplingContext ctx, Random rng) {
+        double u1 = rng.nextDouble();
+        double u2 = rng.nextDouble();
 
         double xr = ctx.leftXr + u1 * ctx.kernelSize;
         double yr = ctx.topYr + u2 * ctx.kernelSize;
 
-        long r3 = ctx.splitmix.applyAsLong(r2);
-        double uj = (double) (r3 & ctx.MASK53) * ctx.INV_2POW53;
+        double uj = rng.nextDouble();
         double angle = uj * Math.PI * 2.0;
         double jitterMag = Math.min(ctx.kernelSize * 0.12, ctx.radius * 0.8);
 
@@ -373,7 +362,7 @@ public class Ht_Dot {
 
         Point2D pointRot = new Point2D.Double(xr + offX, yr + offY);
         Point2D pointOrig = invertTransform(pointRot, ctx.rotation);
-        
+
         if (pointOrig == null) {
             return;
         }

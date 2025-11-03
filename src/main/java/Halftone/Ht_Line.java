@@ -2,10 +2,10 @@ package Halftone;
 
 import Data.ColorAccumulator;
 import Data.ImageData;
+import Halftone.Util.RngHelper;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -14,13 +14,20 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Ht_Line {
-    private final int lineSpacing = 0; // Currently unused
-    private final double lineThicknessMIN = 1.0 / 32.0; // Small enough to allow lines to propagate but not to exist in bright areas
-    
+    public double lineSpacingMax = 0; // Maximum spacing in pixels (positive or negative) applied to each row center
+    private final double lineThicknessMIN = 1.0 / 32.0;
+
     public Color backgroundColor = Color.WHITE;
     public Color foregroundColor = Color.BLACK;
+
+    // Randomization controls 
+    private final Random rng = RngHelper.getRng();
+
+    public double rowProbability = 1.0; // % Chance of drawing a row
+    public boolean invertRowSelection = false; // If true, invert which rows are drawn
 
     /**
      * Apply a straight-line halftone pattern.
@@ -33,14 +40,14 @@ public class Ht_Line {
     public BufferedImage applyLinePattern(BufferedImage input, int kernelSize, ImageData data) {
         int width = input.getWidth();
         int height = input.getHeight();
-        
+
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) output.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Invert the rotation so we can map rotated coordinates back to the original image space.
         AffineTransform invRot = invert(data.rotation);
-        
+
         if (invRot == null) {
             g.dispose();
             
@@ -51,28 +58,45 @@ public class Ht_Line {
 
         double minXr = data.bounds[0];
         double minYr = data.bounds[2];
-        
+
         int rows = data.avgGrid.length;
         int cols = data.avgGrid[0].length;
 
         for (int row = 0; row < rows; row++) {
+            // For each row, determine its own spacing in pixels using the shared RNG.
+            // spacingPercent in [0..1] -> map to [-1..1] -> multiply by lineSpacingMax to get pixels.
+            double spacingPixels = 0.0;
+            
+            if (lineSpacingMax > 0.0) {
+                spacingPixels = (rng.nextDouble() * 2.0 - 1.0) * lineSpacingMax; // maps 0..1 to -max..+max
+            }
+            
+            // Randomly decide whether to skip this row based on probability and inversion
+            boolean drawRow = rng.nextDouble() < rowProbability;
+            
+            if (invertRowSelection) {
+                drawRow = !drawRow;
+            }
+            
+            if (!drawRow) {
+                continue; // Skip this row entirely
+            }
+
             Point2D[] uppers = new Point2D[cols];
             Point2D[] lowers = new Point2D[cols];
-            
+
             boolean[] valid = new boolean[cols];
             int countValid = 0;
 
+            // Iterate over columns; NO column skipping here — spacing is applied as a vertical offset per row.
             for (int col = 0; col < cols; col++) {
                 ColorAccumulator acc = data.avgGrid[row][col];
-                
-                if (acc.count == 0) {
+
+                if (acc == null || acc.count == 0) {
                     valid[col] = false;
                     
                     continue;
                 }
-                
-                valid[col] = true;
-                countValid++;
 
                 // Compute grayscale [0..255] and alpha [0..255] for this kernel
                 double gray = acc.getGrayScale();
@@ -82,16 +106,21 @@ public class Ht_Line {
                 double baseHalf = computeBaseHalfThickness(gray, kernelSize);
                 double halfThick = baseHalf * (alpha / 255.0);
 
-                // Find the center of the kernel in rotated space.
+                // Find the center of the kernel in rotated space and apply per-row vertical spacing offset.
                 Point2D centerRot = kernelCenter(row, col, kernelSize, minXr, minYr);
-                
-                // Build the top and bottom points in rotated coordinates.
-                Point2D upperRot = new Point2D.Double(centerRot.getX(), centerRot.getY() - halfThick);
-                Point2D lowerRot = new Point2D.Double(centerRot.getX(), centerRot.getY() + halfThick);
+                // Apply spacing in rotated-space Y direction (positive spacingPixels moves center down).
+                Point2D shiftedCenterRot = new Point2D.Double(centerRot.getX(), centerRot.getY() + spacingPixels);
+
+                // Build the top and bottom points in rotated coordinates using the shifted center.
+                Point2D upperRot = new Point2D.Double(shiftedCenterRot.getX(), shiftedCenterRot.getY() - halfThick);
+                Point2D lowerRot = new Point2D.Double(shiftedCenterRot.getX(), shiftedCenterRot.getY() + halfThick);
 
                 // Map these rotated points back into original image coordinates.
                 uppers[col] = mapBack(upperRot, invRot);
                 lowers[col] = mapBack(lowerRot, invRot);
+
+                valid[col] = true;
+                countValid++;
             }
 
             if (countValid >= 3) {
@@ -101,7 +130,7 @@ public class Ht_Line {
         }
 
         g.dispose();
-        
+
         return output;
     }
 
@@ -116,18 +145,18 @@ public class Ht_Line {
     public BufferedImage applySinePattern(BufferedImage input, int kernelSize, ImageData data) {
         int width = input.getWidth();
         int height = input.getHeight();
-        
+
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) output.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Invert the rotation to map rotated-space points back to original.
         AffineTransform invRot = invert(data.rotation);
-        
         if (invRot == null) {
             g.dispose();
             
             return output;
+            
         }
 
         fillBackground(g, width, height);
@@ -135,12 +164,12 @@ public class Ht_Line {
         double minXr = data.bounds[0];
         double maxXr = data.bounds[1];
         double minYr = data.bounds[2];
-        
+
         int rows = data.avgGrid.length;
         int cols = data.avgGrid[0].length;
 
         // Sine parameters: amplitude = half kernel, frequency = 1 cycle per (kernelSize * 6) px
-        double amplitude = kernelSize / 2.0;
+        double amplitudeBase = kernelSize / 2.0;
         double frequency = 2 * Math.PI / (kernelSize * 6.0);
 
         for (int row = 0; row < rows; row++) {
@@ -148,15 +177,34 @@ public class Ht_Line {
                 continue;
             }
 
-            double centerY = minYr + row * kernelSize + kernelSize / 2.0;
+            // Determine per-row vertical offset
+            double spacingPixels = 0.0;
+            
+            if (lineSpacingMax > 0.0) {
+                spacingPixels = (rng.nextDouble() * 2.0 - 1.0) * lineSpacingMax; // -max..+max
+            }
+
+            // Decide if this row should be drawn
+            boolean drawRow = rng.nextDouble() < rowProbability;
+            
+            if (invertRowSelection) {
+                drawRow = !drawRow;
+            }
+            
+            if (!drawRow) {
+                continue;
+            }
+
+            double centerY = minYr + row * kernelSize + kernelSize / 2.0 + spacingPixels;
+            
             List<Point2D> topList = new ArrayList<>();
             List<Point2D> botList = new ArrayList<>();
 
             for (double x = minXr; x <= maxXr; x += 1.0) {
                 InterpolatedResult ir = interpolatedGrayAndAlpha(data, row, kernelSize, minXr, x, cols);
-                
+
                 if (ir.gray < 0) {
-                    // No data: close and draw if there are accumulated points
+                    // No data at this X: flush accumulated points
                     if (!topList.isEmpty()) {
                         Path2D poly = buildPathFromLists(topList, botList);
                         draw(g, poly);
@@ -173,7 +221,6 @@ public class Ht_Line {
                 if (halfThick <= 0) {
                     if (!topList.isEmpty()) {
                         Path2D poly = buildPathFromLists(topList, botList);
-                        
                         draw(g, poly);
                         topList.clear();
                         botList.clear();
@@ -182,25 +229,27 @@ public class Ht_Line {
                     continue;
                 }
 
+                // Apply sine displacement with amplitude scaled by gray/alpha if desired
+                double amplitude = amplitudeBase * (ir.alpha / 255.0);
                 double ySine = centerY + amplitude * Math.sin(frequency * x);
-                
+
                 Point2D topRot = new Point2D.Double(x, ySine - halfThick);
                 Point2D botRot = new Point2D.Double(x, ySine + halfThick);
-                
+
+                // Map back to original image coordinates
                 Point2D topOrig = mapBack(topRot, invRot);
                 Point2D botOrig = mapBack(botRot, invRot);
 
-                topList.add(new Point((int) Math.round(topOrig.getX()), (int) Math.round(topOrig.getY())));
-                botList.add(new Point((int) Math.round(botOrig.getX()), (int) Math.round(botOrig.getY())));
+                topList.add(new Point2D.Double(topOrig.getX(), topOrig.getY()));
+                botList.add(new Point2D.Double(botOrig.getX(), botOrig.getY()));
             }
 
-            // Finish and draw if there are points after finishing the line
+            // Flush remaining points after finishing row
             if (!topList.isEmpty()) {
                 Path2D poly = buildPathFromLists(topList, botList);
                 draw(g, poly);
             }
         }
-
 
         g.dispose();
         
@@ -234,7 +283,7 @@ public class Ht_Line {
      * Black (0) yields maximum thickness = (kernelSize/2 - lineSpacing), white (255) yields zero.
      */
     private double computeBaseHalfThickness(double gray, int kernelSize) {
-        double thick = ((kernelSize / 2.0) - lineSpacing) * (1.0 - (gray / 255.0));
+        double thick = (kernelSize / 2.0) * (1.0 - (gray / 255.0));
         
         return (thick > lineThicknessMIN) ? thick : 0; // Prevent lines smaller than a pixel
     }

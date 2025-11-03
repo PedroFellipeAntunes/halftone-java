@@ -4,6 +4,7 @@ Halftone/Operations$1.class
 Windows/GenericInputDialog.class
 Util/Main.class
 Data/HexPackingResult.class
+Halftone/Util/RngHelper.class
 Halftone/Util/TestMethods.class
 Util/Timing.class
 Windows/DropDownWindow$3$1.class
