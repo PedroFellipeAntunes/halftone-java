@@ -127,6 +127,8 @@ Below is a high-level overview of the halftone algorithm (example based on line/
 
 ## Additional Examples
 
+Angles:
+
 <p align="center">
   <img src="images/tests/gradient_sphere_alpha.png" width="150" alt="Sphere 0">
   <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B0%2C0%5D.png" width="150" alt="Sphere 1">
@@ -135,8 +137,16 @@ Below is a high-level overview of the halftone algorithm (example based on line/
   <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B135%2C0%5D.png" width="150" alt="Sphere 4">
 </p>
 
+Wave crosshatching:
+
 <p align="center">
   <img src="images/tests/Lion_waiting_in_Namibia_waves.png" width="750" alt="Example Lion Sine">
+</p>
+
+Stippling:
+
+<p align="center">
+  <img src="images/tests/pexels-nien-tran-dinh-788736-1654748_Halftone%5BStippling%3B15%3B45%2C0%5D.png" width="750" alt="Example Stippling">
 </p>
 
 Overlaying halftones at opposing angles to create a cross-hatching effect. This effect can be further enhanced by generating an outline (e.g., with Extended Difference of Gaussians).
