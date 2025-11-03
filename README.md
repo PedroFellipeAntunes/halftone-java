@@ -9,24 +9,24 @@ This project is a Java Maven application built using NetBeans IDE and Swing that
         <table>
           <tr>
             <td>
-              <img src="images/tests/cameraman_lines.png" width="200" alt="Example 1">
+              <img src="images/tests/cameraman_Line_45.png" width="200" alt="Example 1">
             </td>
             <td>
-              <img src="images/tests/peppers_lines.png" width="200" alt="Example 2">
+              <img src="images/tests/peppers_Line_135.png" width="200" alt="Example 2">
             </td>
           </tr>
           <tr>
             <td>
-              <img src="images/tests/pirate_lines.png" width="200" alt="Example 3">
+              <img src="images/tests/pirate_Line_135.png" width="200" alt="Example 3">
             </td>
             <td>
-              <img src="images/tests/baboon_lines.png" width="200" alt="Example 4">
+              <img src="images/tests/baboon_Line_45.png" width="200" alt="Example 4">
             </td>
           </tr>
         </table>
       </td>
       <td>
-        <img src="images/tests/baboon_color_dots.png" width="400" alt="Example Colored Dots">
+        <img src="images/tests/baboon_Dot_RGB.png" width="400" alt="Example Colored Dots">
       </td>
     </tr>
   </table>
@@ -129,34 +129,29 @@ Below is a high-level overview of the halftone algorithm (example based on line/
 
 <p align="center">
   <img src="images/tests/gradient_sphere_alpha.png" width="150" alt="Sphere 0">
-  <img src="images/tests/gradient_sphere_alpha_0.png" width="150" alt="Sphere 1">
-  <img src="images/tests/gradient_sphere_alpha_45.png" width="150" alt="Sphere 2">
-  <img src="images/tests/gradient_sphere_alpha_90.png" width="150" alt="Sphere 3">
-  <img src="images/tests/gradient_sphere_alpha_135.png" width="150" alt="Sphere 4">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B0%2C0%5D.png" width="150" alt="Sphere 1">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B45%2C0%5D.png" width="150" alt="Sphere 2">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B90%2C0%5D.png" width="150" alt="Sphere 3">
+  <img src="images/tests/gradient_sphere_alpha_Halftone%5BLines%3B10%3B135%2C0%5D.png" width="150" alt="Sphere 4">
 </p>
 
 <p align="center">
-  <img src="images/tests/Lion_waiting_in_Namibia_example.png" width="550" alt="Example Lion Sine">
+  <img src="images/tests/Lion_waiting_in_Namibia_waves.png" width="750" alt="Example Lion Sine">
 </p>
 
-<p align="center">
-  <img src="images/tests/Blade-Runner-2049-1753_bottom.png" width="650" alt="Example 5">
-  <img src="images/tests/Blade-Runner-2049-1753_top.png" width="650" alt="Example 6">
-</p>
-
-Overlaying halftones at opposing angles with the dark layer at 50% opacity to create a cross-hatching effect.
+Overlaying halftones at opposing angles to create a cross-hatching effect. This effect can be further enhanced by generating an outline (e.g., with Extended Difference of Gaussians).
 
 <p align="center">
-  <img src="images/tests/Blade-Runner-2049-1753_Example1.png" width="650" alt="Example 7">
-</p>
-
-This effect can be further enhanced by generating an outline (e.g., with Extended Difference of Gaussians).
-
-<p align="center">
-  <img src="images/tests/Blade-Runner-2049-1753_Example2.png" width="650" alt="Example 8">
+  <table align="center">
+    <tr>
+      <td>
+        <img src="images/tests/pexels-soldiervip-1382730.jpg" width="600" alt="Example Original">
+      </td>
+      <td>
+        <img src="images/tests/pexels-soldiervip-1382730_Manga.png" width="600" alt="Example Manga like effect">
+      </td>
+    </tr>
+  </table>
 </p>
 
 ---
-
-
-
