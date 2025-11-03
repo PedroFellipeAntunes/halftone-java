@@ -24,7 +24,7 @@ public class Ht_Line {
     public Color foregroundColor = Color.BLACK;
 
     // Randomization controls 
-    private final Random rng = RngHelper.getRng();
+    private final Random rng = RngHelper.getNewRng();
 
     public double rowProbability = 1.0; // % Chance of drawing a row
     public boolean invertRowSelection = false; // If true, invert which rows are drawn

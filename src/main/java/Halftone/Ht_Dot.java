@@ -17,6 +17,9 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class Ht_Dot {
+    // Randomization controls 
+    private final Random rng = RngHelper.getNewRng();
+    
     public Color backgroundColor = Color.WHITE;
     public Color foregroundColor = Color.BLACK;
 
@@ -342,7 +345,7 @@ public class Ht_Dot {
     
     private void drawStipplingPointsInKernel(Graphics2D g2d, KernelStipplingContext ctx) {
         for (int p = 0; p < ctx.pointsInKernel; p++) {
-            drawStipplingDot(g2d, ctx, RngHelper.getRng());
+            drawStipplingDot(g2d, ctx, rng);
         }
     }
     
