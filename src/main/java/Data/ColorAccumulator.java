@@ -1,10 +1,13 @@
 package Data;
-
 import FileManager.Grayscale;
 import java.awt.Color;
 
 public class ColorAccumulator {
     public int sumA = 0, sumR = 0, sumG = 0, sumB = 0, count = 0;
+    
+    // Sobel gradient data (only computed for FlowLine type)
+    public double sobelAngle = 0.0;
+    public double magnitude = 0.0;
     
     /**
      * Adds the given color's RGBA components to this accumulator.
@@ -41,7 +44,6 @@ public class ColorAccumulator {
         
         return new Color(avgR, avgG, avgB, avgA);
     }
-
     /**
      * Computes the grayscale (luminance) value of the accumulated color average
      * by using the provided Grayscale.bt709 method (ITU-R BT.709 weights).
@@ -62,11 +64,11 @@ public class ColorAccumulator {
         rgba[1] = avg.getRed();
         rgba[2] = avg.getGreen();
         rgba[3] = avg.getBlue();
-
+        
         // Perform BT.709 grayscale conversion
         Grayscale gs = new Grayscale();
         int[] grayRGBA = gs.bt709(rgba);
-
+        
         return grayRGBA[1]; // Gray RED
     }
 }

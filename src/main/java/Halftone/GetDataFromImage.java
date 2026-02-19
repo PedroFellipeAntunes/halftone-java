@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class GetDataFromImage {
     /**
-     * Calculates the axis‐aligned bounding box of an image after applying
+     * Calculates the axis-aligned bounding box of an image after applying
      * the specified rotation transform.
      *
      * @param image The image to be rotated.
@@ -51,7 +51,7 @@ public class GetDataFromImage {
     
     /**
      * Computes a 2D grid of ColorAccumulator objects, each corresponding to a
-     * kernel‐sized block in the rotated image space.
+     * kernel-sized block in the rotated image space.
      *
      * @param image Original image.
      * @param angleDegrees Rotation angle in degrees (unused here; included for
@@ -111,5 +111,77 @@ public class GetDataFromImage {
         }
 
         return accumulators;
+    }
+    
+    /**
+     * Computes Sobel gradient angles for each kernel in the accumulator grid.
+     * Uses a 3x3 Sobel operator applied to the grayscale values of neighboring kernels.
+     * 
+     * The Sobel operator computes image gradients:
+     * - Gx: horizontal gradient (detects vertical edges)
+     * - Gy: vertical gradient (detects horizontal edges)
+     * - Angle = atan2(Gy, Gx): direction of maximum intensity change
+     *
+     * @param image Original image (unused, kept for future extensions).
+     * @param kernelSize Size of each kernel in pixels.
+     * @param bounds Rotated bounds array {minXr, maxXr, minYr, maxYr}.
+     * @param rotation Rotation transform (unused, kept for future extensions).
+     * @param accumulators 2D array of ColorAccumulators to populate with Sobel angles.
+     */
+    public void computeSobelAngles(BufferedImage image, int kernelSize, double[] bounds, AffineTransform rotation, ColorAccumulator[][] accumulators) {
+        int numKernels = accumulators.length;
+        int numSegments = accumulators[0].length;
+        
+        // Sobel kernels for gradient computation
+        int[][] sobelX = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+        int[][] sobelY = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+        
+        double maxMagnitude = 0.0;
+        
+        for (int kr = 0; kr < numKernels; kr++) {
+            for (int kc = 0; kc < numSegments; kc++) {
+                double gx = 0.0;
+                double gy = 0.0;
+                
+                // Apply 3x3 Sobel operator on neighboring kernels
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        int nkr = kr + dy;
+                        int nkc = kc + dx;
+                        
+                        // Use zero-padding for out-of-bounds neighbors
+                        double gray = 0.0;
+                        
+                        if (nkr >= 0 && nkr < numKernels && nkc >= 0 && nkc < numSegments) {
+                            gray = accumulators[nkr][nkc].getGrayScale();
+                        }
+                        
+                        gx += gray * sobelX[dy + 1][dx + 1];
+                        gy += gray * sobelY[dy + 1][dx + 1];
+                    }
+                }
+                
+                double magnitude = Math.sqrt(gx * gx + gy * gy);
+
+                accumulators[kr][kc].sobelAngle = Math.atan2(gy, gx);
+                accumulators[kr][kc].magnitude = magnitude;
+
+                if (magnitude > maxMagnitude) {
+                    maxMagnitude = magnitude;
+                }
+                
+                // Compute angle: atan2(Gy, Gx) gives direction of gradient in radians
+                accumulators[kr][kc].sobelAngle = Math.atan2(gy, gx);
+            }
+        }
+        
+        // Second pass: normalize magnitude to [0,1]
+        if (maxMagnitude > 0.0) {
+            for (int kr = 0; kr < numKernels; kr++) {
+                for (int kc = 0; kc < numSegments; kc++) {
+                    accumulators[kr][kc].magnitude /= maxMagnitude;
+                }
+            }
+        }
     }
 }

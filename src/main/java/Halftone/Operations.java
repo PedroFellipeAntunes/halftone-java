@@ -5,11 +5,12 @@ import Halftone.Util.ResizeImage;
 import Halftone.Util.TestMethods;
 import ColorSeparator.ColorChannelSeparator;
 import Data.ConfigData;
+import Data.TYPE;
 import FileManager.PngReader;
 import FileManager.PngSaver;
 import Windows.ImageViewer;
 import Data.ImageData;
-import Data.TYPE;
+import Halftone.Util.RngHelper;
 
 import static Util.Timing.measure;
 
@@ -25,8 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Operations {
-    private final int stipplingDensity = 85; // This is the optimal value for all kernel sizes this code uses, found it by doing some data crunching
-    
     private final ConfigData config;
 
     public boolean skip = false; // Flag to skip displaying
@@ -69,7 +68,9 @@ public class Operations {
         );
         
         // Optional test
-//        testMethods(expanded, filePath);
+        if (config.debugState) {
+            testMethods(expanded, filePath);
+        }
 
         // 3) Apply the selected processing pipeline (Default, CMYK, RGB)
         final BufferedImage halftoned = switch (config.opType) {
@@ -133,9 +134,12 @@ public class Operations {
     }
 
     private BufferedImage process(BufferedImage expanded) {
+        // Determine if Sobel computation is needed
+        boolean needsSobel = false;
+        
         // Create ImageData object with kernel info and rotation
         ImageData id = measure("Calculating Image Data", () ->
-            new ImageData(expanded, config.scale, config.angle)
+            new ImageData(expanded, config.scale, config.angle, needsSobel)
         );
 
         // Apply the selected halftone pattern and return processed image
@@ -143,6 +147,9 @@ public class Operations {
     }
 
     private BufferedImage processCMYK(BufferedImage expanded) {
+        // Determine if Sobel computation is needed
+        boolean needsSobel = false;
+        
         // Separate expanded image into CMYK channels
         ColorChannelSeparator ccs = new ColorChannelSeparator();
         BufferedImage[] cmyk = ccs.separateCMYK(expanded, 0, false, false);
@@ -167,8 +174,9 @@ public class Operations {
             final int index = i;
 
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
+                // Sobel not needed for CMYK mode
                 ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
-                    new ImageData(cmyk[index], config.scale, angles[index])
+                    new ImageData(cmyk[index], config.scale, angles[index], needsSobel)
                 );
                 
                 // Apply halftone to the current channel and store
@@ -201,6 +209,9 @@ public class Operations {
     }
 
     private BufferedImage processRGB(BufferedImage expanded) {
+        // Determine if Sobel computation is needed
+        boolean needsSobel = false;
+        
         // Separate expanded image into RGB channels
         ColorChannelSeparator ccs = new ColorChannelSeparator();
         BufferedImage[] rgb = ccs.separateRBGA(expanded, 0, false, false);
@@ -225,8 +236,9 @@ public class Operations {
             final int index = i;
 
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
+                // Sobel not needed for RGB mode
                 ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
-                    new ImageData(rgb[index], config.scale, angles[index])
+                    new ImageData(rgb[index], config.scale, angles[index], needsSobel)
                 );
 
                 // Apply halftone to the current channel and store
@@ -259,7 +271,7 @@ public class Operations {
     }
 
     private void testMethods(BufferedImage input, String filePath) {
-        ImageData id = new ImageData(input, config.scale, config.angle);
+        ImageData id = new ImageData(input, config.scale, config.angle, false);
 
         // Test kernel application
         new ImageViewer(TestMethods.applyKernelTest(input, config.scale, id), filePath, this);
@@ -270,6 +282,8 @@ public class Operations {
     
     // Thread safe version
     private BufferedImage applyHalftone(BufferedImage image, ImageData id, Color bg, Color fg) {
+        RngHelper.initialize(config);
+        
         switch (config.type) {
             case Dots -> {
                 Ht_Dot dotGen = new Ht_Dot();
@@ -297,7 +311,7 @@ public class Operations {
                 dotGen.backgroundColor = bg;
                 dotGen.foregroundColor = fg;
                 
-                return dotGen.applyStipplingPattern(image, config.scale, id, stipplingDensity);
+                return dotGen.applyStipplingPattern(image, config.scale, id, config.stipplingDensity);
             }
             case Lines -> {
                 Ht_Line lineGen = new Ht_Line();
@@ -306,12 +320,15 @@ public class Operations {
                 
                 return lineGen.applyLinePattern(image, config.scale, id);
             }
-            default -> {
+            case SineWaves -> {
                 Ht_Line sineGen = new Ht_Line();
                 sineGen.backgroundColor = bg;
                 sineGen.foregroundColor = fg;
-                
+
                 return sineGen.applySinePattern(image, config.scale, id);
+            }
+            default -> {
+                return image;
             }
         }
     }

@@ -1,7 +1,7 @@
 package Data;
 
 public enum OpType {
-    Default,
+    Grayscale,
     CMYK,
     RGB;
 }

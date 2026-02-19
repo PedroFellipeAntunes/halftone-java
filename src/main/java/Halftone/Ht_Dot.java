@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class Ht_Dot {
-    // Randomization controls 
+    // Randomization controls
     private final Random rng = RngHelper.getNewRng();
     
     public Color backgroundColor = Color.WHITE;

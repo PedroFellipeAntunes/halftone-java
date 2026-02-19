@@ -1,6 +1,8 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ColorAccumulator.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ConfigData.java
-/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/HexPackingResult.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ConfigPanelEntry.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/FlowLine.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Data/FlowLinePoint.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/ImageData.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/KernelStipplingContext.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Data/OpType.java
@@ -11,8 +13,11 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/FileManager/PngSaver.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/GetDataFromImage.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Ht_Dot.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Ht_FlowLine.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Ht_Line.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Operations.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/FlowLine/FlowLineGenerator.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/FlowLine/FlowLineRendererBezier.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ImageMerger.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/ResizeImage.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/RngHelper.java
@@ -21,6 +26,14 @@
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Halftone/Util/TestMethods.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Main.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Util/Timing.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/AdvancedConfigWindow.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/DropDownWindow.java
-/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/GenericInputDialog.java
 /home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/ImageViewer.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/ConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/ConfigPanelRegistry.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/Panels/ExtraConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/Panels/FlowLineConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/Panels/PolygonsConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/Panels/StipplingConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/TypeConfigPanel.java
+/home/pfca/NetBeansProjects/Halftone/src/main/java/Windows/Util/UIHelper.java

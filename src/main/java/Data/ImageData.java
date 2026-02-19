@@ -1,5 +1,4 @@
 package Data;
-
 import Halftone.GetDataFromImage;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -31,6 +30,18 @@ public class ImageData {
      * grid.
      */
     public ImageData(BufferedImage input, int kernelSize, double angle) {
+        this(input, kernelSize, angle, false);
+    }
+    
+    /**
+     * Constructs an ImageData object with optional Sobel gradient computation.
+     *
+     * @param input The source image to analyze.
+     * @param kernelSize Size (in pixels) of each square kernel.
+     * @param angle Rotation angle in degrees (0–360) used to orient the kernel grid.
+     * @param computeSobel If true, computes Sobel gradient angles for each kernel (used by FlowLine).
+     */
+    public ImageData(BufferedImage input, int kernelSize, double angle, boolean computeSobel) {
         // Prepare rotation transform
         double theta = Math.toRadians(angle);
         double centerX = input.getWidth() / 2.0;
@@ -43,5 +54,10 @@ public class ImageData {
         
         // Compute color accumulators per kernel
         avgGrid = dataFetcher.computeColorAccumulators(input, angle, kernelSize, bounds, rotation);
+        
+        // Optionally compute Sobel gradient angles
+        if (computeSobel) {
+            dataFetcher.computeSobelAngles(input, kernelSize, bounds, rotation, avgGrid);
+        }
     }
 }

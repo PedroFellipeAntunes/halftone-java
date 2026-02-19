@@ -1,32 +1,65 @@
 package Halftone.Util;
 
+import Data.ConfigData;
 import java.util.Random;
 
+/**
+ * Helper class for Random Number Generation using ConfigData seed.
+ */
 public class RngHelper {
-    private static final long RNG_SEED = 123456789L; // Shared seed for reproducibility
-    private static final Random RNG_INSTANCE = new Random(RNG_SEED);
-
+    private static ConfigData currentConfig = null;
+    private static Random rngInstance = null;
+    
     private RngHelper() {
         // Prevent instantiation
     }
-
+    
     /**
-     * Returns the shared Random instance using a fixed seed.
+     * Initialize RNG with the given configuration.
+     * Must be called before using getRng() or getNewRng().
+     * 
+     * @param config Configuration containing RNG seed
+     */
+    public static void initialize(ConfigData config) {
+        currentConfig = config;
+        rngInstance = new Random(config.rngSeed);
+    }
+    
+    /**
+     * Returns the shared Random instance using the configured seed.
      * This RNG is global and stateful: each call to next() advances its sequence.
-     *
-     * @return Shared Random instance.
+     * 
+     * @return Shared Random instance
+     * @throws IllegalStateException if initialize() was not called
      */
     public static Random getRng() {
-        return RNG_INSTANCE;
+        if (rngInstance == null) {
+            throw new IllegalStateException("RngHelper not initialized. Call initialize(config) first.");
+        }
+        return rngInstance;
     }
-
+    
     /**
-     * Returns a new Random instance initialized with the same fixed seed.
+     * Returns a new Random instance initialized with the configured seed.
      * This ensures identical reproducible sequences regardless of prior RNG usage.
-     *
-     * @return New Random instance with the fixed seed.
+     * 
+     * @return New Random instance with the configured seed
+     * @throws IllegalStateException if initialize() was not called
      */
     public static Random getNewRng() {
-        return new Random(RNG_SEED);
+        if (currentConfig == null) {
+            throw new IllegalStateException("RngHelper not initialized. Call initialize(config) first.");
+        }
+        return new Random(currentConfig.rngSeed);
+    }
+    
+    /**
+     * Reset the RNG instance to its initial state using the current seed.
+     * Useful for restarting reproducible sequences.
+     */
+    public static void reset() {
+        if (currentConfig != null) {
+            rngInstance = new Random(currentConfig.rngSeed);
+        }
     }
 }

@@ -6,5 +6,5 @@ public enum TYPE {
     AlternatingTriangles,
     Stippling,
     Lines,
-    SineWave;
+    SineWaves;
 }

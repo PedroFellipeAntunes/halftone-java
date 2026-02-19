@@ -2,45 +2,31 @@ package Data;
 
 import java.awt.Color;
 
+/**
+ * Configuration data with default values.
+ * All fields have sensible defaults that can be modified by UI components.
+ */
 public class ConfigData {
-    public int scale; // Pixel size of kernel
-    public int angle;
-    public TYPE type;
-    public OpType opType;
-    public Color colors[];
-    public int polySides;
-
-    /**
-     * ConfigData object which contains all the possible configuration variables 
-     * for the halftone process.
-     * 
-     * @param scale Size of each halftone kernel in pixels.
-     * @param angle Rotation angle (degrees) to apply before halftoning.
-     * @param type Halftone type (Dots, Lines, Squares, Triangles, Sine).
-     * @param colors Two-color array: [0] = background color, [1] = foreground color.
-     * @param opType Operation mode: Default, CMYK, RGB.
-     */
-    public ConfigData(int scale, int angle, TYPE type, OpType opType, Color[] colors) {
-        this(scale, angle, type, opType, colors, 0);
-    }
-
-    /**
-     * ConfigData object which contains all the possible configuration variables 
-     * for the halftone process.
-     * 
-     * @param scale Size of each halftone kernel in pixels.
-     * @param angle Rotation angle (degrees) to apply before halftoning.
-     * @param type Halftone type (Dots, Lines, Squares, Triangles, Sine).
-     * @param colors Two-color array: [0] = background color, [1] = foreground color.
-     * @param opType Operation mode: Default, CMYK, RGB.
-     * @param polySides Value for the ammount of sides in the polygon.
-     */
-    public ConfigData(int scale, int angle, TYPE type, OpType opType, Color[] colors, int polySides) {
-        this.scale = scale;
-        this.angle = angle;
-        this.type = type;
-        this.opType = opType;
-        this.colors = colors;
-        this.polySides = polySides;
-    }
+    // ===== PRIMARY CONFIGS (always used) =====
+    public int scale = 15;
+    public int angle = 45;
+    public TYPE type = TYPE.Dots;
+    public OpType opType = OpType.Grayscale;
+    public Color[] colors = new Color[]{Color.WHITE, Color.BLACK};
+    
+    // ===== GLOBAL CONFIGS =====
+    public long rngSeed = 123456789L;
+    public boolean debugState = false;
+    
+    // ===== TYPE-SPECIFIC CONFIGS =====
+    // Polygons
+    public int polySides = 4;
+    
+    // Stippling (optimal value found through data analysis)
+    public int stipplingDensity = 85;
+    
+    // FlowLines
+    public int minStep = 1;
+    public int maxStep = 5;
+    public boolean followMaxChange = false;
 }
