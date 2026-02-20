@@ -20,8 +20,6 @@ public class FlowLineRendererBezier {
     public Color backgroundColor = Color.WHITE;
     public Color foregroundColor = Color.BLACK;
 
-    public int minLineSize = 2;
-
     // Smoothing configuration (N neighboring kernels along the line)
     public int lineSmoothingRadius = 2;
 
@@ -48,7 +46,7 @@ public class FlowLineRendererBezier {
         g2d.setColor(foregroundColor);
 
         for (FlowLine line : flowLines) {
-            if (line == null || line.size() < minLineSize) continue;
+            if (line == null) continue;
 
             // Draw the ribbon
             Path2D ribbon = buildBezierRibbon(line, kernelSize, minXr, minYr, data);
@@ -107,7 +105,8 @@ public class FlowLineRendererBezier {
 
     /**
      * Calculates per-point half-widths using a moving average over neighboring
-     * kernel cells along the flow line.
+     * kernel cells along the flow line. Alpha is applied to each cell's
+     * base half-thickness, consistent with the behavior of other halftone renderers.
      */
     private double[] calculateHalfWidths(FlowLine line, int kernelSize, ImageData data) {
         int n = line.size();
@@ -127,8 +126,11 @@ public class FlowLineRendererBezier {
 
                     if (kr >= 0 && kr < data.avgGrid.length && kc >= 0 && kc < data.avgGrid[0].length) {
                         ColorAccumulator cell = data.avgGrid[kr][kc];
+
                         if (cell.count > 0) {
-                            sumHalfWidth += computeBaseHalfThickness(cell, kernelSize);
+                            double baseThick = computeBaseHalfThickness(cell, kernelSize);
+                            double alpha = cell.getAverage().getAlpha() / 255.0; // Apply alpha
+                            sumHalfWidth += baseThick * alpha;
                             count++;
                         }
                     }

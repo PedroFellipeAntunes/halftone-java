@@ -69,7 +69,6 @@ public class Ht_FlowLine {
         // Configure and run renderer
         renderer.backgroundColor = backgroundColor;
         renderer.foregroundColor = foregroundColor;
-        renderer.minLineSize = minLineSize;
         renderer.render(g2d, validLines, data, kernelSize);
 
         g2d.dispose();
