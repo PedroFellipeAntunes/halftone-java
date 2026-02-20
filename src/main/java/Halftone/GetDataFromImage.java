@@ -184,4 +184,76 @@ public class GetDataFromImage {
             }
         }
     }
+    
+    /**
+     * Applies a box blur to the Sobel angle and magnitude fields of each
+     * ColorAccumulator in the grid.
+     *
+     * Angles are blurred using circular/vector averaging (via sin/cos
+     * components) to correctly handle wraparound (e.g., 350° and 10° should
+     * average to 0°, not 180°). Magnitudes use a standard arithmetic box blur.
+     *
+     * @param accumulators 2D grid of ColorAccumulators with precomputed Sobel
+     * data.
+     * @param blurRadius Radius of the blur kernel (e.g., 1 = 3x3, 2 = 5x5
+     * window). A value of 0 is a no-op.
+     */
+    public void blurSobelValues(ColorAccumulator[][] accumulators, int blurRadius) {
+        if (blurRadius <= 0) {
+            return;
+        }
+
+        int numKernels = accumulators.length;
+        int numSegments = accumulators[0].length;
+
+        double[][] newMagnitude = new double[numKernels][numSegments];
+        double[][] newSinAngle = new double[numKernels][numSegments];
+        double[][] newCosAngle = new double[numKernels][numSegments];
+
+        for (int kr = 0; kr < numKernels; kr++) {
+            for (int kc = 0; kc < numSegments; kc++) {
+
+                double sumMag = 0.0;
+                double sumSin = 0.0;
+                double sumCos = 0.0;
+                int count = 0;
+
+                for (int dy = -blurRadius; dy <= blurRadius; dy++) {
+                    for (int dx = -blurRadius; dx <= blurRadius; dx++) {
+                        int nkr = kr + dy;
+                        int nkc = kc + dx;
+
+                        // Zero-padding: skip out-of-bounds neighbours
+                        if (nkr < 0 || nkr >= numKernels || nkc < 0 || nkc >= numSegments) {
+                            continue;
+                        }
+
+                        double angle = accumulators[nkr][nkc].sobelAngle;
+                        double mag = accumulators[nkr][nkc].magnitude;
+
+                        sumMag += mag;
+                        // Weight sin/cos by magnitude so stronger edges dominate
+                        sumSin += Math.sin(angle) * mag;
+                        sumCos += Math.cos(angle) * mag;
+                        count++;
+                    }
+                }
+
+                newMagnitude[kr][kc] = (count > 0) ? sumMag / count : 0.0;
+
+                // atan2(0, 0) == 0 and is safe, so no special-case needed
+                newSinAngle[kr][kc] = sumSin;
+                newCosAngle[kr][kc] = sumCos;
+            }
+        }
+
+        // Write results back
+        for (int kr = 0; kr < numKernels; kr++) {
+            for (int kc = 0; kc < numSegments; kc++) {
+                accumulators[kr][kc].magnitude = newMagnitude[kr][kc];
+                accumulators[kr][kc].sobelAngle = Math.atan2(newSinAngle[kr][kc],
+                        newCosAngle[kr][kc]);
+            }
+        }
+    }
 }

@@ -139,7 +139,7 @@ public class Operations {
         
         // Create ImageData object with kernel info and rotation
         ImageData id = measure("Calculating Image Data", () ->
-            new ImageData(expanded, config.scale, config.angle, needsSobel)
+            new ImageData(expanded, config.scale, config.angle, needsSobel, config.blurRadius)
         );
 
         // Apply the selected halftone pattern and return processed image
@@ -176,7 +176,7 @@ public class Operations {
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
                 // Sobel not needed for CMYK mode
                 ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
-                    new ImageData(cmyk[index], config.scale, angles[index], needsSobel)
+                    new ImageData(cmyk[index], config.scale, angles[index], needsSobel, config.blurRadius)
                 );
                 
                 // Apply halftone to the current channel and store
@@ -238,7 +238,7 @@ public class Operations {
             tasks.add(() -> measure("Applying pattern: " + channelNames[index], () -> {
                 // Sobel not needed for RGB mode
                 ImageData id = measure("Calculating Image Data: " + channelNames[index], () ->
-                    new ImageData(rgb[index], config.scale, angles[index], needsSobel)
+                    new ImageData(rgb[index], config.scale, angles[index], needsSobel, config.blurRadius)
                 );
 
                 // Apply halftone to the current channel and store
@@ -271,7 +271,7 @@ public class Operations {
     }
 
     private void testMethods(BufferedImage input, String filePath) {
-        ImageData id = new ImageData(input, config.scale, config.angle, false);
+        ImageData id = new ImageData(input, config.scale, config.angle);
 
         // Test kernel application
         new ImageViewer(TestMethods.applyKernelTest(input, config.scale, id), filePath, this);

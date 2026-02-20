@@ -13,7 +13,7 @@ import static Windows.Util.UI.UIConstants.*;
  * Configuration panel for FlowLine TYPE.
  * Provides controls to configure minimum and maximum step sizes,
  * an option to follow maximum changes in step size, the line smoothing radius,
- * and the minimum line size.
+ * the minimum line size, and the Sobel blur radius.
  */
 public class FlowLineConfigPanel extends ConfigPanel {
     private JSlider minStepSlider;
@@ -25,6 +25,8 @@ public class FlowLineConfigPanel extends ConfigPanel {
     private JTextField smoothField;
     private JSlider minLineSizeSlider;
     private JTextField minLineSizeField;
+    private JSlider blurRadiusSlider;
+    private JTextField blurRadiusField;
 
     private boolean followMaxChangeState;
 
@@ -34,6 +36,8 @@ public class FlowLineConfigPanel extends ConfigPanel {
     private static final int MAX_SMOOTH_RADIUS = 10;
     private static final int MIN_LINE_SIZE_MIN = 1;
     private static final int MIN_LINE_SIZE_MAX = 10;
+    private static final int MIN_BLUR_RADIUS = 0;
+    private static final int MAX_BLUR_RADIUS = 10;
 
     /**
      * Creates a new FlowLine configuration panel.
@@ -48,8 +52,8 @@ public class FlowLineConfigPanel extends ConfigPanel {
     /**
      * Initializes all UI components and layout.
      * Builds min/max step sliders with cross-validation, a smoothing radius slider,
-     * a minimum line size slider, and a follow-max-change toggle placed into the
-     * standard config container.
+     * a minimum line size slider, a Sobel blur radius slider, and a follow-max-change
+     * toggle placed into the standard config container.
      */
     @Override
     public void initializeComponents() {
@@ -154,6 +158,30 @@ public class FlowLineConfigPanel extends ConfigPanel {
         contentPanel.add(PanelHelper.createDivider());
         contentPanel.add(PanelHelper.createVerticalSpace(20));
 
+        // === SOBEL BLUR RADIUS SECTION ===
+        contentPanel.add(LabelHelper.createConfigTitle(
+            "Radius of the box blur applied to Sobel angle and magnitude values (0 = no blur):",
+            availableWidth
+        ));
+
+        Component[] blurComponents = SliderHelper.createSliderPanel(
+            "Sobel Blur Radius (" + MIN_BLUR_RADIUS + "-" + MAX_BLUR_RADIUS + ")",
+            MIN_BLUR_RADIUS, MAX_BLUR_RADIUS, config.blurRadius,
+            BG_COLOR, FG_COLOR
+        );
+
+        JPanel blurPanel = (JPanel) blurComponents[0];
+        PanelHelper.setupFullWidth(blurPanel);
+
+        blurRadiusSlider = (JSlider) blurComponents[1];
+        blurRadiusField  = (JTextField) blurComponents[2];
+
+        contentPanel.add(blurPanel);
+
+        contentPanel.add(PanelHelper.createVerticalSpace(20));
+        contentPanel.add(PanelHelper.createDivider());
+        contentPanel.add(PanelHelper.createVerticalSpace(20));
+
         // === FOLLOW MAX CHANGE SECTION ===
         contentPanel.add(LabelHelper.createConfigTitle(
             "Direction of flow:",
@@ -178,6 +206,7 @@ public class FlowLineConfigPanel extends ConfigPanel {
         config.maxStep = maxStepSlider.getValue();
         config.flowLineSmoothRadius = smoothSlider.getValue();
         config.minLineSize = minLineSizeSlider.getValue();
+        config.blurRadius = blurRadiusSlider.getValue();
         config.followMaxChange = followMaxChangeState;
     }
 
@@ -207,6 +236,8 @@ public class FlowLineConfigPanel extends ConfigPanel {
         smoothField.setEnabled(enabled);
         minLineSizeSlider.setEnabled(enabled);
         minLineSizeField.setEnabled(enabled);
+        blurRadiusSlider.setEnabled(enabled);
+        blurRadiusField.setEnabled(enabled);
         followMaxChangeToggle.setEnabled(enabled);
     }
 }

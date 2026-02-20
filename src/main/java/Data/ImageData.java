@@ -31,7 +31,7 @@ public class ImageData {
      * grid.
      */
     public ImageData(BufferedImage input, int kernelSize, double angle) {
-        this(input, kernelSize, angle, false);
+        this(input, kernelSize, angle, false, 0);
     }
     
     /**
@@ -41,8 +41,10 @@ public class ImageData {
      * @param kernelSize Size (in pixels) of each square kernel.
      * @param angle Rotation angle in degrees (0–360) used to orient the kernel grid.
      * @param computeSobel If true, computes Sobel gradient angles for each kernel (used by FlowLine).
+     * @param sobelBlurRadius Radius of the box blur applied to Sobel angle and magnitude
+     * values after computation (0 = no blur).
      */
-    public ImageData(BufferedImage input, int kernelSize, double angle, boolean computeSobel) {
+    public ImageData(BufferedImage input, int kernelSize, double angle, boolean computeSobel, int sobelBlurRadius) {
         // Prepare rotation transform
         double theta = Math.toRadians(angle);
         double centerX = input.getWidth() / 2.0;
@@ -59,6 +61,7 @@ public class ImageData {
         // Optionally compute Sobel gradient angles
         if (computeSobel) {
             dataFetcher.computeSobelAngles(input, kernelSize, bounds, rotation, avgGrid);
+            dataFetcher.blurSobelValues(avgGrid, sobelBlurRadius);
         }
     }
 }
