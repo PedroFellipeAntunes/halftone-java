@@ -1,4 +1,5 @@
 package Data;
+
 import FileManager.Grayscale;
 import java.awt.Color;
 

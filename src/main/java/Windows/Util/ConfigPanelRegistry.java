@@ -21,6 +21,9 @@ public class ConfigPanelRegistry {
         // ===== TYPE-SPECIFIC CONFIGS =====
         register("type:Polygons", "Polygons", PolygonsConfigPanel::new);
         register("type:Stippling", "Stippling", StipplingConfigPanel::new);
+        register("type:Lines", "Lines", LinesConfigPanel::new);
+        register("type:Waves", "Waves", WaveConfigPanel::new);
+        register("type:FlowLines", "Flow Lines", FlowLineConfigPanel::new);
     }
 
     /**

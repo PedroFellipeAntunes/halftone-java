@@ -1,20 +1,23 @@
 package Windows;
 
 import Data.ConfigData;
-import Windows.Util.UIHelper;
 import Windows.Util.ConfigPanelRegistry;
 import Data.ConfigPanelEntry;
 import Windows.Util.ConfigPanel;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.*;
 
+import static Windows.Util.UI.UIConstants.*;
+
 /**
  * Advanced configuration window with a panel list on the left
  * and the corresponding configuration panel on the right.
  * Remembers the last selected panel across sessions via a static field.
+ * Each panel's scroll position is saved and restored when switching between panels.
  */
 public class AdvancedConfigWindow extends JDialog {
     private final ConfigData config;
@@ -22,6 +25,8 @@ public class AdvancedConfigWindow extends JDialog {
     private final JPanel configPanelContainer;
     private final CardLayout cardLayout;
     private final Map<String, ConfigPanel> configPanels;
+    private final Map<String, JScrollPane> scrollPanes;
+    private final Map<String, Integer> scrollPositions;
     private final JButton applyButton;
     private final JButton cancelButton;
 
@@ -32,6 +37,9 @@ public class AdvancedConfigWindow extends JDialog {
 
     // Persists the last selected panel name across dialog instances
     private static String lastSelectedPanel = null;
+
+    // Tracks which panel is currently visible so we can save its scroll position before switching
+    private String currentPanelName = null;
 
     /**
      * Creates and initializes the advanced configuration dialog.
@@ -44,15 +52,17 @@ public class AdvancedConfigWindow extends JDialog {
         super(parent, "Advanced Configuration", true);
         this.config = config;
         this.configPanels = new HashMap<>();
+        this.scrollPanes = new HashMap<>();
+        this.scrollPositions = new HashMap<>();
         this.cardLayout = new CardLayout();
         this.configPanelContainer = new JPanel(cardLayout);
 
-        this.applyButton  = new JButton("Apply");
+        this.applyButton = new JButton("Apply");
         this.cancelButton = new JButton("Cancel");
 
         // Collect all registered panel display names for the list
         java.util.List<String> configNames = new java.util.ArrayList<>();
-        
+
         for (ConfigPanelEntry entry : ConfigPanelRegistry.getAllPanels()) {
             configNames.add(entry.getDisplayName());
         }
@@ -72,7 +82,7 @@ public class AdvancedConfigWindow extends JDialog {
         // Show whichever panel is currently selected in the list
         if (configList.getModel().getSize() > 0) {
             String selectedName = configList.getSelectedValue();
-            
+
             if (selectedName != null) {
                 showConfigPanel(selectedName);
             }
@@ -81,9 +91,9 @@ public class AdvancedConfigWindow extends JDialog {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        UIHelper.centerWindow(this);
+        WindowHelper.centerWindow(this);
     }
-    
+
     /**
      * Convenience method to construct and display the dialog modally.
      *
@@ -111,16 +121,16 @@ public class AdvancedConfigWindow extends JDialog {
         }
     }
 
-    // ===== Helper methods =====
+    // ===== Private helpers =====
 
     // Assembles the root layout: left panel list, center card container, south buttons
     private void initializeUI() {
         setLayout(new BorderLayout());
-        getContentPane().setBackground(UIHelper.BG_COLOR);
+        getContentPane().setBackground(BG_COLOR);
 
         add(createLeftPanel(), BorderLayout.WEST);
 
-        UIHelper.stylePanel(configPanelContainer, UIHelper.BG_COLOR, true);
+        PanelHelper.stylePanel(configPanelContainer, BG_COLOR, true);
         add(configPanelContainer, BorderLayout.CENTER);
 
         add(createButtonPanel(), BorderLayout.SOUTH);
@@ -128,25 +138,23 @@ public class AdvancedConfigWindow extends JDialog {
 
     // Builds the left-side panel containing the section title and the config list
     private JPanel createLeftPanel() {
-        JPanel panel = UIHelper.createPanel(new BorderLayout(), UIHelper.BG_COLOR, true);
+        JPanel panel = PanelHelper.createPanel(new BorderLayout(), BG_COLOR, true);
         panel.setPreferredSize(new Dimension(LIST_WIDTH, 0));
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(UIHelper.BORDER_COLOR),
+            BorderFactory.createLineBorder(BORDER_COLOR),
             new EmptyBorder(10, 10, 10, 10)
         ));
 
         panel.add(
-            UIHelper.createSectionTitle("Configuration", SwingConstants.CENTER, 12f, 10),
+            LabelHelper.createSectionTitle("Configuration", SwingConstants.CENTER, 12f, 10),
             BorderLayout.NORTH
         );
 
         // Apply color inversion on selection to match the application's style
-        UIHelper.styleList(
+        ScrollHelper.styleList(
             configList,
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR,
-            UIHelper.FG_COLOR,
-            UIHelper.BG_COLOR,
+            BG_COLOR, FG_COLOR,
+            FG_COLOR, BG_COLOR,
             true
         );
 
@@ -162,9 +170,9 @@ public class AdvancedConfigWindow extends JDialog {
 
                 // Invert foreground/background to highlight the selected row
                 if (isSelected) {
-                    UIHelper.styleLabel(label, UIHelper.FG_COLOR, UIHelper.BG_COLOR);
+                    LabelHelper.styleLabel(label, FG_COLOR, BG_COLOR);
                 } else {
-                    UIHelper.styleLabel(label, UIHelper.BG_COLOR, UIHelper.FG_COLOR);
+                    LabelHelper.styleLabel(label, BG_COLOR, FG_COLOR);
                 }
 
                 label.setText((String) value);
@@ -177,7 +185,7 @@ public class AdvancedConfigWindow extends JDialog {
         configList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 String selectedName = configList.getSelectedValue();
-                
+
                 if (selectedName != null) {
                     showConfigPanel(selectedName);
                     lastSelectedPanel = selectedName;
@@ -186,7 +194,7 @@ public class AdvancedConfigWindow extends JDialog {
         });
 
         JScrollPane scrollPane = new JScrollPane(configList);
-        UIHelper.styleScrollPane(scrollPane, true);
+        ScrollHelper.styleScrollPane(scrollPane, true);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -194,17 +202,17 @@ public class AdvancedConfigWindow extends JDialog {
 
     // Builds the bottom panel containing the Cancel and Apply buttons
     private JPanel createButtonPanel() {
-        JPanel panel = UIHelper.createPanel(
+        JPanel panel = PanelHelper.createPanel(
             new FlowLayout(FlowLayout.RIGHT, 10, 10),
-            UIHelper.BG_COLOR,
+            BG_COLOR,
             false
         );
 
-        UIHelper.styleButton(cancelButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true);
+        ButtonHelper.styleButton(cancelButton, BG_COLOR, FG_COLOR, true);
         cancelButton.addActionListener(e -> dispose());
 
         // Apply writes all panel configs to ConfigData, then closes the dialog
-        UIHelper.styleButton(applyButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true);
+        ButtonHelper.styleButton(applyButton, BG_COLOR, FG_COLOR, true);
         applyButton.addActionListener(e -> {
             applyAllConfigs();
             dispose();
@@ -216,7 +224,12 @@ public class AdvancedConfigWindow extends JDialog {
         return panel;
     }
 
-    // Instantiates all registered config panels and adds them to the card layout container
+    // Instantiates all registered config panels, wraps each in a themed scroll pane,
+    // and adds the scroll pane to the card layout container.
+    // configPanels holds direct references to the ConfigPanel instances so that
+    // setControlsEnabled and applyAllConfigs can reach them without indirection.
+    // scrollPanes holds references to each JScrollPane so scroll positions can be
+    // saved and restored when the user switches between panels.
     private void loadConfigPanels() {
         int configPanelWidth = WINDOW_WIDTH - LIST_WIDTH - PADDING;
 
@@ -227,13 +240,51 @@ public class AdvancedConfigWindow extends JDialog {
             panel.initializeComponents();
 
             configPanels.put(entry.getDisplayName(), panel);
-            configPanelContainer.add(panel, entry.getDisplayName());
+
+            // Wrap in a themed scroll pane; the scroll bar appears only when the
+            // panel content is taller than the available area.
+            JScrollPane scrollPane = ScrollHelper.createThemedScrollPane(panel);
+            scrollPanes.put(entry.getDisplayName(), scrollPane);
+            scrollPositions.put(entry.getDisplayName(), 0);
+
+            configPanelContainer.add(scrollPane, entry.getDisplayName());
         }
     }
 
-    // Flips the card layout to the panel matching the given display name
+    /**
+     * Saves the current panel's scroll position, flips the card layout to the
+     * panel matching the given display name, then restores (or resets to top)
+     * that panel's previously saved scroll position without flickering.
+     *
+     * Calling validate() on the container forces Swing to complete its layout
+     * pass synchronously before we set the viewport position, so the position
+     * is correct from the very first paint — no invokeLater needed.
+     */
     private void showConfigPanel(String displayName) {
+        // Save scroll position of the panel we are leaving
+        if (currentPanelName != null) {
+            JScrollPane leavingPane = scrollPanes.get(currentPanelName);
+            if (leavingPane != null) {
+                scrollPositions.put(currentPanelName,
+                    leavingPane.getVerticalScrollBar().getValue());
+            }
+        }
+
         cardLayout.show(configPanelContainer, displayName);
+        currentPanelName = displayName;
+
+        // Force the layout pass to complete synchronously so the viewport
+        // size is fully resolved before we set the scroll position.
+        // This avoids the flicker that invokeLater would cause.
+        configPanelContainer.validate();
+
+        // Restore saved scroll position (defaults to 0 = top for first visit)
+        int savedPosition = scrollPositions.getOrDefault(displayName, 0);
+        JScrollPane arrivingPane = scrollPanes.get(displayName);
+
+        if (arrivingPane != null) {
+            arrivingPane.getViewport().setViewPosition(new Point(0, savedPosition));
+        }
     }
 
     // Iterates all loaded panels and writes their current state back to ConfigData

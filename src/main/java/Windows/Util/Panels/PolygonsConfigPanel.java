@@ -2,10 +2,12 @@ package Windows.Util.Panels;
 
 import Data.ConfigData;
 import Windows.Util.ConfigPanel;
-import Windows.Util.UIHelper;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static Windows.Util.UI.UIConstants.*;
 
 /**
  * Configuration panel for Polygons TYPE.
@@ -21,7 +23,7 @@ public class PolygonsConfigPanel extends ConfigPanel {
     /**
      * Create a new Polygons configuration panel.
      *
-     * @param config Configuration data reference
+     * @param config Configuration data reference.
      */
     public PolygonsConfigPanel(ConfigData config) {
         super(config);
@@ -33,29 +35,24 @@ public class PolygonsConfigPanel extends ConfigPanel {
      */
     @Override
     public void initializeComponents() {
-        JPanel contentPanel = UIHelper.createConfigPanelContainer(this);
+        JPanel contentPanel = PanelHelper.createConfigPanelContainer(this);
 
         // Title
-        JLabel titleLabel = UIHelper.createSectionTitle(
+        JLabel titleLabel = LabelHelper.createSectionTitle(
             "Number of Polygon Sides:",
-            SwingConstants.LEFT,
-            14f,
-            15
+            SwingConstants.LEFT, 14f, 15
         );
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         contentPanel.add(titleLabel);
 
         // Slider
-        Component[] sidesComponents = UIHelper.createSliderPanel(
+        Component[] sidesComponents = SliderHelper.createSliderPanel(
             "Sides (" + MIN_SIDES + "-" + MAX_SIDES + ")",
-            MIN_SIDES,
-            MAX_SIDES,
-            config.polySides,
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR
+            MIN_SIDES, MAX_SIDES, config.polySides,
+            BG_COLOR, FG_COLOR
         );
 
-        UIHelper.setupFullWidth((JComponent) sidesComponents[0]);
+        PanelHelper.setupFullWidth((JComponent) sidesComponents[0]);
         sidesSlider = (JSlider) sidesComponents[1];
         sidesField = (JTextField) sidesComponents[2];
 
@@ -73,7 +70,7 @@ public class PolygonsConfigPanel extends ConfigPanel {
     /**
      * Get the display name shown in UI selectors.
      *
-     * @return Display name for this configuration panel
+     * @return Display name for this configuration panel.
      */
     @Override
     public String getDisplayName() {
@@ -83,7 +80,7 @@ public class PolygonsConfigPanel extends ConfigPanel {
     /**
      * Enable or disable all interactive components.
      *
-     * @param enabled true to enable components, false to disable
+     * @param enabled True to enable components, false to disable.
      */
     @Override
     public void setEnabled(boolean enabled) {

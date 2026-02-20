@@ -2,10 +2,12 @@ package Windows.Util.Panels;
 
 import Data.ConfigData;
 import Windows.Util.ConfigPanel;
-import Windows.Util.UIHelper;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static Windows.Util.UI.UIConstants.*;
 
 /**
  * Configuration panel for Stippling TYPE.
@@ -21,7 +23,7 @@ public class StipplingConfigPanel extends ConfigPanel {
     /**
      * Create a new Stippling configuration panel.
      *
-     * @param config Configuration data reference
+     * @param config Configuration data reference.
      */
     public StipplingConfigPanel(ConfigData config) {
         super(config);
@@ -33,25 +35,22 @@ public class StipplingConfigPanel extends ConfigPanel {
      */
     @Override
     public void initializeComponents() {
-        JPanel contentPanel = UIHelper.createConfigPanelContainer(this);
+        JPanel contentPanel = PanelHelper.createConfigPanelContainer(this);
 
         // Title
-        contentPanel.add(UIHelper.createConfigTitle(
+        contentPanel.add(LabelHelper.createConfigTitle(
             "Max Stippling Dot Density (Not recommended to change, the default value was defined by evaluating different densities):",
             availableWidth
         ));
 
         // Slider
-        Component[] densityComponents = UIHelper.createSliderPanel(
+        Component[] densityComponents = SliderHelper.createSliderPanel(
             "Dot Density (" + MIN_DENSITY + "-" + MAX_DENSITY + ")",
-            MIN_DENSITY,
-            MAX_DENSITY,
-            config.stipplingDensity,
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR
+            MIN_DENSITY, MAX_DENSITY, config.stipplingDensity,
+            BG_COLOR, FG_COLOR
         );
 
-        UIHelper.setupFullWidth((JComponent) densityComponents[0]);
+        PanelHelper.setupFullWidth((JComponent) densityComponents[0]);
         densitySlider = (JSlider) densityComponents[1];
         densityField = (JTextField) densityComponents[2];
 
@@ -69,7 +68,7 @@ public class StipplingConfigPanel extends ConfigPanel {
     /**
      * Get the display name shown in UI selectors.
      *
-     * @return Display name for this configuration panel
+     * @return Display name for this configuration panel.
      */
     @Override
     public String getDisplayName() {
@@ -79,7 +78,7 @@ public class StipplingConfigPanel extends ConfigPanel {
     /**
      * Enable or disable all interactive components.
      *
-     * @param enabled true to enable components, false to disable
+     * @param enabled True to enable components, false to disable.
      */
     @Override
     public void setEnabled(boolean enabled) {

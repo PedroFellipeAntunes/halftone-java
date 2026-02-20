@@ -1,5 +1,7 @@
 package FileManager;
+
 import java.awt.Color;
+
 public class Grayscale {
     /**
     * Expects interger array of size 4, with values between 0 and 255, 

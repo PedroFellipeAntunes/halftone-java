@@ -4,7 +4,7 @@ import Data.ConfigData;
 import Data.OpType;
 import Data.TYPE;
 import Halftone.Operations;
-import Windows.Util.UIHelper;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+
+import static Windows.Util.UI.UIConstants.*;
 
 /**
  * Main application window.
@@ -58,7 +60,7 @@ public class DropDownWindow {
         finalizeFrame();
     }
 
-    // ===== Helper methods =====
+    // ===== Private helpers =====
 
     // Creates the root JFrame with a fixed size and BorderLayout
     private void initFrame() {
@@ -70,14 +72,13 @@ public class DropDownWindow {
 
     // Creates the central drop area label and attaches the file drag-and-drop handler
     private void initDropLabel() {
-        dropLabel = UIHelper.createLabel(
+        dropLabel = LabelHelper.createLabel(
             "Drop IMAGE files here",
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR,
+            BG_COLOR, FG_COLOR,
             SwingConstants.CENTER
         );
         dropLabel.setPreferredSize(new Dimension(FRAME_WIDTH, DROP_AREA_HEIGHT));
-        dropLabel.setBorder(BorderFactory.createLineBorder(UIHelper.BORDER_COLOR));
+        dropLabel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
         dropLabel.setTransferHandler(createTransferHandler());
         frame.add(dropLabel, BorderLayout.CENTER);
     }
@@ -86,26 +87,22 @@ public class DropDownWindow {
     private void initTypeAndOpTypeComboBoxes() {
         typeComboBox = new JComboBox<>(TYPE.values());
         typeComboBox.setSelectedItem(config.type);
-        UIHelper.styleComboBox(typeComboBox, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true);
-        UIHelper.customizeComboBoxUI(typeComboBox);
+        ComboBoxHelper.styleComboBox(typeComboBox, BG_COLOR, FG_COLOR, true);
+        ComboBoxHelper.customizeComboBoxUI(typeComboBox);
         typeComboBox.addActionListener(e -> {
-            if (!loading) {
-                config.type = (TYPE) typeComboBox.getSelectedItem();
-            }
+            if (!loading) config.type = (TYPE) typeComboBox.getSelectedItem();
         });
 
         opTypeComboBox = new JComboBox<>(OpType.values());
         opTypeComboBox.setSelectedItem(config.opType);
-        UIHelper.styleComboBox(opTypeComboBox, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true);
-        UIHelper.customizeComboBoxUI(opTypeComboBox);
+        ComboBoxHelper.styleComboBox(opTypeComboBox, BG_COLOR, FG_COLOR, true);
+        ComboBoxHelper.customizeComboBoxUI(opTypeComboBox);
         opTypeComboBox.addActionListener(e -> {
-            if (!loading) {
-                config.opType = (OpType) opTypeComboBox.getSelectedItem();
-            }
+            if (!loading) config.opType = (OpType) opTypeComboBox.getSelectedItem();
         });
 
         // Place both combo boxes side-by-side at the top
-        JPanel comboPanel = UIHelper.createPanel(new GridLayout(1, 2, 0, 0), UIHelper.BG_COLOR, false);
+        JPanel comboPanel = PanelHelper.createPanel(new GridLayout(1, 2, 0, 0), BG_COLOR, false);
         comboPanel.add(typeComboBox);
         comboPanel.add(opTypeComboBox);
 
@@ -115,46 +112,39 @@ public class DropDownWindow {
     // Builds the bottom control bar: scale slider, angle slider, color pickers, and action buttons
     private void initSlidersAndControls() {
         // Scale slider
-        Component[] sizeComponents = UIHelper.createSliderPanel(
+        Component[] sizeComponents = SliderHelper.createSliderPanel(
             "Scale (0px - 100px)",
             0, 100, config.scale,
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR
+            BG_COLOR, FG_COLOR
         );
-        
-        sliderSize     = (JSlider)    sizeComponents[1];
+
+        sliderSize = (JSlider) sizeComponents[1];
         valueFieldSize = (JTextField) sizeComponents[2];
 
         sliderSize.addChangeListener(e -> {
-            if (!loading) {
-                config.scale = sliderSize.getValue();
-            }
+            if (!loading) config.scale = sliderSize.getValue();
         });
 
         // Angle slider
-        Component[] angleComponents = UIHelper.createSliderPanel(
+        Component[] angleComponents = SliderHelper.createSliderPanel(
             "Angle (0° - 360°)",
             0, 360, config.angle,
-            UIHelper.BG_COLOR,
-            UIHelper.FG_COLOR
+            BG_COLOR, FG_COLOR
         );
-        
-        sliderAngle     = (JSlider)    angleComponents[1];
+
+        sliderAngle = (JSlider) angleComponents[1];
         valueFieldAngle = (JTextField) angleComponents[2];
 
         sliderAngle.addChangeListener(e -> {
-            if (!loading) {
-                config.angle = sliderAngle.getValue();
-            }
+            if (!loading) config.angle = sliderAngle.getValue();
         });
 
         // Color pickers for background and foreground
-        UIHelper.styleColorButton(colorPicker1, config.colors[0], true);
-        UIHelper.styleColorButton(colorPicker2, config.colors[1], true);
+        ButtonHelper.styleColorButton(colorPicker1, config.colors[0], true);
+        ButtonHelper.styleColorButton(colorPicker2, config.colors[1], true);
 
         colorPicker1.addActionListener(e -> {
             Color chosen = JColorChooser.showDialog(frame, "Choose Color Background", config.colors[0]);
-            
             if (chosen != null) {
                 config.colors[0] = chosen;
                 colorPicker1.setBackground(chosen);
@@ -163,19 +153,18 @@ public class DropDownWindow {
 
         colorPicker2.addActionListener(e -> {
             Color chosen = JColorChooser.showDialog(frame, "Choose Color Foreground", config.colors[1]);
-            
             if (chosen != null) {
                 config.colors[1] = chosen;
                 colorPicker2.setBackground(chosen);
             }
         });
 
-        JPanel colorPanel = UIHelper.createPanel(new BorderLayout(), UIHelper.BG_COLOR, false);
+        JPanel colorPanel = PanelHelper.createPanel(new BorderLayout(), BG_COLOR, false);
         colorPanel.add(colorPicker1, BorderLayout.NORTH);
         colorPanel.add(colorPicker2, BorderLayout.SOUTH);
 
         // Reflect button: mirrors the current angle across 180°
-        UIHelper.styleButton(reflectButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true, 50, 50);
+        ButtonHelper.styleButton(reflectButton, BG_COLOR, FG_COLOR, true, 50, 50);
         reflectButton.addActionListener(e -> {
             int newAngle = ((config.angle % 360) + 360) % 360;
             newAngle = (180 - newAngle + 360) % 360;
@@ -183,19 +172,17 @@ public class DropDownWindow {
         });
 
         // Advanced config opens a separate dialog for less common settings
-        UIHelper.styleButton(advancedConfigButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true, 50, 50);
+        ButtonHelper.styleButton(advancedConfigButton, BG_COLOR, FG_COLOR, true, 50, 50);
         advancedConfigButton.addActionListener(e -> {
-            if (!loading) {
-                AdvancedConfigWindow.showDialog(frame, config);
-            }
+            if (!loading) AdvancedConfigWindow.showDialog(frame, config);
         });
 
-        JPanel buttonPanel = UIHelper.createPanel(new FlowLayout(FlowLayout.CENTER, 5, 0), UIHelper.BG_COLOR, false);
+        JPanel buttonPanel = PanelHelper.createPanel(new FlowLayout(FlowLayout.CENTER, 5, 0), BG_COLOR, false);
         buttonPanel.add(reflectButton);
         buttonPanel.add(advancedConfigButton);
 
         // Assemble all controls into the bottom control bar
-        JPanel controlPanel = UIHelper.createPanel(new FlowLayout(FlowLayout.CENTER, 10, 0), UIHelper.BG_COLOR, false);
+        JPanel controlPanel = PanelHelper.createPanel(new FlowLayout(FlowLayout.CENTER, 10, 0), BG_COLOR, false);
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         controlPanel.add(colorPanel);
         controlPanel.add((JPanel) sizeComponents[0]);
@@ -208,7 +195,7 @@ public class DropDownWindow {
     // Packs the frame, centers it on screen, and makes it visible
     private void finalizeFrame() {
         frame.pack();
-        UIHelper.centerWindow(frame);
+        WindowHelper.centerWindow(frame);
         frame.setVisible(true);
     }
 
@@ -223,9 +210,7 @@ public class DropDownWindow {
 
             @Override
             public boolean importData(TransferSupport support) {
-                if (!canImport(support)) {
-                    return false;
-                }
+                if (!canImport(support)) return false;
 
                 try {
                     List<File> files = (List<File>) support.getTransferable()
@@ -236,7 +221,7 @@ public class DropDownWindow {
                         String name = file.getName().toLowerCase();
 
                         if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg")) {
-                            UIHelper.showError(frame, "Incorrect image format, use: png, jpg or jpeg");
+                            WindowHelper.showError(frame, "Incorrect image format, use: png, jpg or jpeg");
                             return false;
                         }
                     }
@@ -298,16 +283,14 @@ public class DropDownWindow {
 
                         // Show error on the EDT and abort the batch
                         SwingUtilities.invokeAndWait(() ->
-                            UIHelper.showError(frame, "Error processing file (" + num + "/" + total + "): " + file.getName())
+                            WindowHelper.showError(frame, "Error processing file (" + num + "/" + total + "): " + file.getName())
                         );
 
                         break;
                     }
 
                     // Stop the batch early if the user chose to skip remaining images
-                    if (!op.save && op.skip) {
-                        break;
-                    }
+                    if (!op.save && op.skip) break;
 
                     publish(i + 2);
                 }

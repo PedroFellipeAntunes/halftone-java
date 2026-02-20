@@ -124,7 +124,7 @@ public class Operations {
         saver.saveToFile(prefix, filePath, image);
     }
 
-    // --------------------------- Private/internal methods ---------------------------
+    // Helpers
     private String formatTypeName() {
         if (config.type == TYPE.Polygons) {
             return String.format("%s(%d)", config.type, config.polySides);
@@ -135,7 +135,7 @@ public class Operations {
 
     private BufferedImage process(BufferedImage expanded) {
         // Determine if Sobel computation is needed
-        boolean needsSobel = false;
+        boolean needsSobel = (config.type == TYPE.FlowLines);
         
         // Create ImageData object with kernel info and rotation
         ImageData id = measure("Calculating Image Data", () ->
@@ -148,7 +148,7 @@ public class Operations {
 
     private BufferedImage processCMYK(BufferedImage expanded) {
         // Determine if Sobel computation is needed
-        boolean needsSobel = false;
+        boolean needsSobel = (config.type == TYPE.FlowLines);
         
         // Separate expanded image into CMYK channels
         ColorChannelSeparator ccs = new ColorChannelSeparator();
@@ -210,7 +210,7 @@ public class Operations {
 
     private BufferedImage processRGB(BufferedImage expanded) {
         // Determine if Sobel computation is needed
-        boolean needsSobel = false;
+        boolean needsSobel = (config.type == TYPE.FlowLines);
         
         // Separate expanded image into RGB channels
         ColorChannelSeparator ccs = new ColorChannelSeparator();
@@ -324,8 +324,18 @@ public class Operations {
                 Ht_Line sineGen = new Ht_Line();
                 sineGen.backgroundColor = bg;
                 sineGen.foregroundColor = fg;
+                sineGen.amplitudeScalar = config.amplitudeScalar;
+                sineGen.frequencyScalar = config.frequencyScalar;
 
                 return sineGen.applySinePattern(image, config.scale, id);
+            }
+            case FlowLines -> {
+                Ht_FlowLine flowGen = new Ht_FlowLine();
+                flowGen.backgroundColor = bg;
+                flowGen.foregroundColor = fg;
+                flowGen.minLineSize = config.minLineSize;
+                
+                return flowGen.applyFlowLinePattern(image, config.scale, id, config.minStep, config.maxStep, config.followMaxChange);
             }
             default -> {
                 return image;

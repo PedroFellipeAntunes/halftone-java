@@ -1,4 +1,5 @@
 package Data;
+
 import Halftone.GetDataFromImage;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;

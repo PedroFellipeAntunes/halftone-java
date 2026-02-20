@@ -17,11 +17,15 @@ import java.util.List;
 import java.util.Random;
 
 public class Ht_Line {
-    public double lineSpacingMax = 0; // Maximum spacing in pixels (positive or negative) applied to each row center
     private final double lineThicknessMIN = 1.0 / 32.0;
+    
+    public double lineSpacingMax = 0; // Maximum spacing in pixels (positive or negative) applied to each row center
 
     public Color backgroundColor = Color.WHITE;
     public Color foregroundColor = Color.BLACK;
+    
+    public double amplitudeScalar = 2.0;
+    public double frequencyScalar = 6.0;
 
     // Randomization controls 
     private final Random rng = RngHelper.getNewRng();
@@ -88,7 +92,7 @@ public class Ht_Line {
             boolean[] valid = new boolean[cols];
             int countValid = 0;
 
-            // Iterate over columns; NO column skipping here — spacing is applied as a vertical offset per row.
+            // Iterate over columns; NO column skipping here, spacing is applied as a vertical offset per row.
             for (int col = 0; col < cols; col++) {
                 ColorAccumulator acc = data.avgGrid[row][col];
 
@@ -169,8 +173,8 @@ public class Ht_Line {
         int cols = data.avgGrid[0].length;
 
         // Sine parameters: amplitude = half kernel, frequency = 1 cycle per (kernelSize * 6) px
-        double amplitudeBase = kernelSize / 2.0;
-        double frequency = 2 * Math.PI / (kernelSize * 6.0);
+        double amplitudeBase = kernelSize / this.amplitudeScalar;
+        double frequency = 2 * Math.PI / (kernelSize * this.frequencyScalar);
 
         for (int row = 0; row < rows; row++) {
             if (!rowHasData(data, row)) {

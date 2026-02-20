@@ -25,8 +25,18 @@ public class ConfigData {
     // Stippling (optimal value found through data analysis)
     public int stipplingDensity = 85;
     
+    // Lines
+    public boolean invertRowSelection = false;
+    public double rowProbability = 1.0; // % Chance of drawing a row
+    
+    // Waves
+    public double amplitudeScalar = 2.0;
+    public double frequencyScalar = 6.0;
+    
     // FlowLines
     public int minStep = 1;
     public int maxStep = 5;
     public boolean followMaxChange = false;
+    public int flowLineSmoothRadius = 2;
+    public int minLineSize = 2;
 }

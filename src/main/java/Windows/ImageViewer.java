@@ -1,11 +1,13 @@
 package Windows;
 
 import Halftone.Operations;
-import Windows.Util.UIHelper;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static Windows.Util.UI.UIConstants.*;
 
 /**
  * Modal dialog that displays a processed halftone image and provides
@@ -34,15 +36,15 @@ public class ImageViewer extends JDialog {
         super((Frame) null, "Image Viewer", true);
 
         panel = new ImagePanel(image);
-        panel.setBackground(UIHelper.PANEL_BG_COLOR);
+        panel.setBackground(PANEL_BG_COLOR);
 
-        buttonPanel = UIHelper.createPanel(new FlowLayout(), UIHelper.BG_COLOR, false);
+        buttonPanel = PanelHelper.createPanel(new FlowLayout(), BG_COLOR, false);
 
         saveButton = new JButton("Save");
         goBackButton = new JButton("Don't Save");
 
         // Toggle button that inverts its own colors to signal the active skip state
-        skipRemainingButton = UIHelper.createColorInvertButton("Skip All", () ->
+        skipRemainingButton = ButtonHelper.createColorInvertButton("Skip All", () ->
             operations.skip = !operations.skip
         );
 
@@ -75,7 +77,7 @@ public class ImageViewer extends JDialog {
         setVisible(true);
     }
 
-    // ===== Helper methods =====
+    // ===== Private helpers =====
 
     // Computes a window size that fits the image within 85% of the screen,
     // while enforcing minimum dimensions so small images don't create tiny windows
@@ -100,11 +102,11 @@ public class ImageViewer extends JDialog {
     private void styleButtons() {
         int buttonWidth = Math.min(100, getWidth() / 3);
 
-        UIHelper.styleButton(saveButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
-        UIHelper.styleButton(goBackButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
-        UIHelper.styleButton(skipRemainingButton, UIHelper.BG_COLOR, UIHelper.FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
+        ButtonHelper.styleButton(saveButton, BG_COLOR, FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
+        ButtonHelper.styleButton(goBackButton, BG_COLOR, FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
+        ButtonHelper.styleButton(skipRemainingButton, BG_COLOR, FG_COLOR, true, buttonWidth, BUTTON_HEIGHT);
     }
-    
+
     /**
      * Panel that renders a {@link BufferedImage} scaled to fill its bounds
      * while preserving the original aspect ratio and centering the result.

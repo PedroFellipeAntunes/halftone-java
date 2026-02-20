@@ -2,7 +2,7 @@ package Windows.Util.Panels;
 
 import Data.ConfigData;
 import Windows.Util.ConfigPanel;
-import Windows.Util.UIHelper;
+import Windows.Util.UI.*;
 
 import javax.swing.*;
 
@@ -13,7 +13,6 @@ import javax.swing.*;
 public class ExtraConfigPanel extends ConfigPanel {
     private JTextField seedField;
     private JButton debugToggle;
-
     private boolean debugState;
 
     /**
@@ -32,36 +31,35 @@ public class ExtraConfigPanel extends ConfigPanel {
      */
     @Override
     public void initializeComponents() {
-        JPanel contentPanel = UIHelper.createConfigPanelContainer(this);
+        JPanel contentPanel = PanelHelper.createConfigPanelContainer(this);
 
         // === RNG SEED SECTION ===
-        contentPanel.add(UIHelper.createConfigTitle(
+        contentPanel.add(LabelHelper.createConfigTitle(
             "Random Number Generator Seed (for reproducible results):",
             availableWidth
         ));
 
-        seedField = UIHelper.createBorderedTextField(String.valueOf(config.rngSeed), 200, 30);
-        contentPanel.add(UIHelper.createLabeledInputRow("Seed:", seedField));
+        seedField = TextFieldHelper.createBorderedTextField(String.valueOf(config.rngSeed), 200, 30);
+        contentPanel.add(PanelHelper.createLabeledInputRow("Seed:", seedField));
 
-        contentPanel.add(UIHelper.createVerticalSpace(20));
-        contentPanel.add(UIHelper.createDivider());
-        contentPanel.add(UIHelper.createVerticalSpace(20));
+        contentPanel.add(PanelHelper.createVerticalSpace(20));
+        contentPanel.add(PanelHelper.createDivider());
+        contentPanel.add(PanelHelper.createVerticalSpace(20));
 
         // === DEBUG SECTION ===
-        contentPanel.add(UIHelper.createConfigTitle(
+        contentPanel.add(LabelHelper.createConfigTitle(
             "Generate Debug Images:",
             availableWidth
         ));
 
         // Toggle flips debugState on each click; actual write to config happens in applyConfig
-        Object[] toggleComponents = UIHelper.createToggleButton(
+        Object[] toggleComponents = ButtonHelper.createToggleButton(
             debugState,
             () -> debugState = !debugState
         );
-        
-        debugToggle = (JButton) toggleComponents[0];
 
-        contentPanel.add(UIHelper.createLabeledInputRow("Debug:", debugToggle));
+        debugToggle = (JButton) toggleComponents[0];
+        contentPanel.add(PanelHelper.createLabeledInputRow("Debug:", debugToggle));
     }
 
     /**
@@ -76,7 +74,6 @@ public class ExtraConfigPanel extends ConfigPanel {
         } catch (NumberFormatException e) {
             seedField.setText(String.valueOf(config.rngSeed));
         }
-
         config.debugState = debugState;
     }
 
