@@ -149,6 +149,27 @@ Stippling:
   <img src="images/tests/pexels-nien-tran-dinh-788736-1654748_Halftone%5BStippling%3B15%3B45%2C0%5D.png" width="750" alt="Example Stippling">
 </p>
 
+Flow Lines:
+
+<p align="center">
+  <table align="center">
+    <tr>
+      <td align="center">
+        <img 
+          src="images/tests/pexels-cottonbro-8751510_Halftone%5BFlowLines%3B5%3BCMYK%5D.png" 
+          width="500" 
+          alt="Flow Lines Full">
+      </td>
+      <td align="center">
+          <img 
+            src="images/tests/pexels-cottonbro-8751510_Halftone%5BFlowLines%3B5%3BCMYK%5D_cropped.png"
+            width="500
+            alt="Flow Lines Cropped">
+      </td>
+    </tr>
+  </table>
+</p>
+
 Overlaying halftones at opposing angles to create a cross-hatching effect, by adding some rotation and spacing error we can mimic a hand made pattern. This effect can be further enhanced by generating an outline (e.g., with Extended Difference of Gaussians).
 
 <p align="center">
