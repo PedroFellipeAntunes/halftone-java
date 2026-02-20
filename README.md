@@ -46,7 +46,7 @@ This project is a Java Maven application built Swing that applies the effect of 
 ## Features
 
 - **Apply Halftone Effect**  
-  - Patterns: `Dots`, `Polygons`, `Triangles`, `Stippling`, `Lines`, `Sine Waves`.
+  - Patterns: `Dots`, `Polygons`, `Triangles`, `Stippling`, `Lines`, `Sine Waves`, `Flow Lines`.
 - **Full CMYK/RGB Processing**  
   - Separates image into CMYK/RGB channels, applies halftone at predetermined angles, and merges using multiply/screen blend.
 - **Drag & Drop Support**  
