@@ -39,5 +39,5 @@ public class ConfigData {
     public boolean followMaxChange = false;
     public int flowLineSmoothRadius = 2;
     public int minLineSize = 2;
-    public int blurRadius = 1;
+    public int blurRadius = 2;
 }
