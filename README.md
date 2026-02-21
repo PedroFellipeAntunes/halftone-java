@@ -61,7 +61,7 @@ This project is a Java Maven application built Swing that applies the effect of 
 ## Usage
 
 1. **Open the Application**  
-   - Double-click `Halftone.jar`, or run:  
+   - Double-click [`Halftone.jar`](https://github.com/PedroFellipeAntunes/halftone-java/blob/main/target/Halftone.jar), or run:  
      ```
      java -jar Halftone.jar
      ```
